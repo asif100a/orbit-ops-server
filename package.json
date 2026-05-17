@@ -1,18 +1,23 @@
 {
   "name": "orbit-ops-server",
-  "module": "index.ts",
+  "module": "src/server.ts",
   "type": "module",
   "private": true,
+  "scripts": {
+    "dev": "bun --watch src/server.ts",
+    "start": "bun src/server.ts"
+  },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/express-session": "^1.19.0",
+    "colors": "^1.4.0"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
-    "@types/express": "^5.0.6",
-    "@types/express-session": "^1.19.0",
-    "colors": "^1.4.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",

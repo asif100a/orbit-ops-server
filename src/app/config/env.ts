@@ -16,6 +16,10 @@ interface EnvConfig {
   JWT_REFRESH_EXPIRES_IN: string;
 
   BCRYPT_SALT: string;
+
+  EXPRESS_SESSION_SECRET: string
+
+  FRONTEND_URL: string
 }
 
 export const envConfig: EnvConfig = {
@@ -34,4 +38,8 @@ export const envConfig: EnvConfig = {
   JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN as string,
 
   BCRYPT_SALT: process.env.BCRYPT_SALT as string,
+
+  EXPRESS_SESSION_SECRET: process.env.EXPRESS_SESSION_SECRET as string,
+
+  FRONTEND_URL: process.env.FRONTEND_URL as string
 }
