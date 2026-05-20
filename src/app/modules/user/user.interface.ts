@@ -1,6 +1,6 @@
 import { Types } from "mongoose";
 
-export interface Auth {
+export interface User {
   name: string;
   email: string;
   password: string;
@@ -8,4 +8,7 @@ export interface Auth {
   companyId: Types.ObjectId;
   departmentId: Types.ObjectId;
   teamId: Types.ObjectId;
+  isActive: boolean;
+  isVerified: boolean;
+  isDeleted: boolean;
 }
