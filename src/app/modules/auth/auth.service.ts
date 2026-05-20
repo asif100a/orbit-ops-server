@@ -3,6 +3,7 @@ export class AuthService {
 
   async register(input: any): Promise<any> {
     console.log("Input data: ", input);
+    
   }
 
   async login(input: any): Promise<any> {}
