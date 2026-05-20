@@ -1,13 +1,11 @@
 export class AuthService {
-    constructor() {}
+  constructor() {}
 
-    async register(input: any): Promise<any> {
+  async register(input: any): Promise<any> {
+    console.log("Input data: ", input);
+  }
 
-    }
-
-    async login(input: any): Promise<any>{
-        
-    }
+  async login(input: any): Promise<any> {}
 }
 
-export const authService = new AuthService;
+export const authService = new AuthService();
