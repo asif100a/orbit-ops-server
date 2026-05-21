@@ -128,16 +128,16 @@ const templates = {
     `,
 
   interface: (name, pascal) => `
-    export interface ${pascal}Type {
+  export interface ${pascal}Type {
 
-    }
+  }
 
-    export interface ${pascal}ResponseType {
-       success: boolean;
-       data?: ${pascal}Type | ${pascal}Type[];
-       message: string
-    }
-    `,
+  export interface ${pascal}ResponseType {
+    success: boolean;
+    data?: ${pascal}Type | ${pascal}Type[];
+    message: string
+  }
+  `,
   model: (name, pascal) => `
   import mongoose, {Schema, Document} from 'mongoose';
   import type { ${pascal}Type } from './${name}.interface';
