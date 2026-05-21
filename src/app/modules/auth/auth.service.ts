@@ -1,4 +1,3 @@
-import { password } from "bun";
 import { envConfig } from "../../config/env";
 import type { UserType } from "../user/user.interface";
 import { User } from "../user/user.model";
