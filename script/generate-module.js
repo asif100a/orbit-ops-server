@@ -5,7 +5,7 @@ import path from "path";
 const BASE_DIR = "src/app/modules";
 
 // ------------------Templates-----------------
-const template = {
+const templates = {
   controller: (name, pascal) => `import {Request, Response} from 'express'
     import {${pascal}Service} from './${name}.service';
     import catchAsync from '../src/app/utils/index'
@@ -291,6 +291,64 @@ function generateModule(opts) {
     fs.mkdirSync(moduleDir, { recursive: true });
   }
 
-  const fileTypes = ['controller', 'service', 'interface', 'model', 'route', 'validation', 'index']
-  const result = {created: 0, skipped: 0, existing: 0}
+  const fileTypes = [
+    "controller",
+    "service",
+    "interface",
+    "model",
+    "route",
+    "validation",
+    "index",
+  ];
+  const results = { created: 0, skipped: 0, existing: 0 };
+
+  for (const type of fileTypes) {
+    if (skip.includes(type)) {
+      log.warn(`Skipped   ${name}.${type}.ts`);
+      results.skipped++;
+      continue;
+    }
+
+    const filePath = path.join(moduleDir, `${name}.${type}.ts`);
+    const content = templates[type](name, pascal);
+
+    if (dryRun) {
+      log.info(`[dry-run] ${filePath}`);
+      results.created++;
+      continue;
+    }
+
+    if (fs.existsSync(filePath) && !force) {
+      log.warn(
+        `Exists    ${name}.${type}.ts  ${colors.dim}(use --force to overwrite)${colors.reset}`,
+      );
+      results.existing++;
+      continue;
+    }
+
+    fs.writeFileSync(filePath, content, "utf8");
+    log.success(`Created    ${name}.${type}.ts`);
+    results.created++;
+  }
+
+  // Summary
+  console.log();
+  log.dim("-".repeat(45));
+  if (dryRun) {
+    log.info(
+      `[Dry run] ${results.created} file(s) would be created in: ${moduleDir}`,
+    );
+  } else {
+    log.info(
+      `Done! ${results.created} created, ${results.skipped} skipped, ${results.existing} already existed.`,
+    );
+    console.log(
+      `\n${colors.dim}Next: import ${name}Routes in your app.ts / index.ts${colors.reset}\n`,
+    );
+  }
 }
+
+// ------------------Run-----------------
+const args = process.argv.slice(2);
+const opts = parseArgs(args);
+generateModule(opts);
