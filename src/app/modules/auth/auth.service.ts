@@ -1,4 +1,5 @@
 import { envConfig } from "../../config/env";
+import AppError from "../../errorHandlers/AppError";
 import type { UserType } from "../user/user.interface";
 import { User } from "../user/user.model";
 import bcrypt from "bcryptjs";
@@ -12,17 +13,27 @@ export class AuthService {
     // Hash the password
     const brcyptSalt = Number(envConfig.BCRYPT_SALT)
     if(!brcyptSalt) {
-      throw new Error('bcrypt salt not found')
+      throw new AppError(400, 'bcrypt salt not found')
     }else if(isNaN(brcyptSalt)) {
-      throw new Error('Invalid bcrypt salt')
+      throw new AppError(400, 'Invalid bcrypt salt')
     }
 
-    const hashedPassword = await bcrypt.hash(input.password, brcyptSalt)
+    try {
+      const hashedPassword = await bcrypt.hash(input.password, brcyptSalt)
+      if(!hashedPassword) {
+        throw new AppError(400, 'Hash password not found')
+      }
 
-    const data = {...input, password: hashedPassword, isActive: false, isVerified: false, isDeleted: false};
-    const result = await User.create(data)
-    
-    return result;
+      const data = {...input, password: hashedPassword, isActive: false, isVerified: false, isDeleted: false};
+      const result = await User.create(data)
+      
+      return result;
+    } catch (error: any) {
+      if (error.code === 11000) {
+        throw new AppError(409, "User with this email already exists");
+      }
+      throw new AppError(400, error.message || "Failed to create user");
+    }
   }
 
   async login(input: any): Promise<any> {}

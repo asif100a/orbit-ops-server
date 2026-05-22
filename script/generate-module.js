@@ -11,6 +11,7 @@ const templates = {
     import {${pascal}Service} from './${name}.service';
     import { catchAsync } from '../../utils/index'
     import type { ${pascal}ResponseType } from './${name}.interface'
+    import AppError from "../../errorHandlers/AppError";
     
     const ${name}Service = new ${pascal}Service();
     
@@ -31,7 +32,7 @@ const templates = {
         async getById(req: Request, res: Response): Promise<void> {
             const paramsId = req.params.id
             if(!paramsId) {
-              throw new Error('Id not found!')
+              throw new AppError('Id not found!')
             }
             try{
                 const data = await ${name}Service.findById(paramsId as string);
@@ -68,7 +69,7 @@ const templates = {
         async update(req: Request, res: Response): Promise<void> {
             const paramsId = req.params.id
             if(!paramsId) {
-              throw new Error('Id not found!')
+              throw new AppError('Id not found!')
             }
             try {
                 const data = await ${name}Service.update(paramsId as string, req.body);
@@ -86,7 +87,7 @@ const templates = {
             try {
                 const paramsId = req.params.id
                 if (!paramsId) {
-                  throw new Error("Id not found!");
+                  throw new AppError("Id not found!");
                 }
                 await ${name}Service.delete(paramsId as string)
                 res.status(200).json({
