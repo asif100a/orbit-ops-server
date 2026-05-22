@@ -2,7 +2,6 @@
     import type {Request, Response} from 'express'
     import {CompanyService} from './company.service';
     import { catchAsync } from '../../utils/index'
-    import type { CompanyResponseType } from './company.interface'
     import AppError from "../../errorHandlers/AppError";
     
     const companyService = new CompanyService();
