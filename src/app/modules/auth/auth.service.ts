@@ -26,8 +26,10 @@ export class AuthService {
 
       const data = {...input, password: hashedPassword, isActive: false, isVerified: false, isDeleted: false};
       const result = await User.create(data)
+      const formattedResult = result.toObject()
+      delete formattedResult?.password
       
-      return result;
+      return formattedResult;
     } catch (error: any) {
       if (error.code === 11000) {
         throw new AppError(409, "User with this email already exists");

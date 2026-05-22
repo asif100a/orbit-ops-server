@@ -10,7 +10,6 @@ const templates = {
     import type {Request, Response} from 'express'
     import {${pascal}Service} from './${name}.service';
     import { catchAsync } from '../../utils/index'
-    import type { ${pascal}ResponseType } from './${name}.interface'
     import AppError from "../../errorHandlers/AppError";
     
     const ${name}Service = new ${pascal}Service();
@@ -129,14 +128,8 @@ const templates = {
     `,
 
   interface: (name, pascal) => `
-  export interface ${pascal}Type {
+  export default interface ${pascal}Type {
 
-  }
-
-  export interface ${pascal}ResponseType {
-    success: boolean;
-    data?: ${pascal}Type | ${pascal}Type[];
-    message: string
   }
   `,
   model: (name, pascal) => `

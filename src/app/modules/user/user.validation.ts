@@ -6,9 +6,7 @@ export const UserSchema = z.object({
   password: z.string().min(8, 'Please provide the password').regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/, 
     'Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character'),
   confirmPassword: z.string().min(8, 'Please provide the confirm password'),
-  companyId: z.string().min(1, 'Please provide the companyId'),
-  departmentId: z.string().min(1, 'Please provide the departmentId'),
-  teamId: z.string().min(1, 'Please provide the teamId'),  
+  status: z.string().enum('pending' | 'approved' | 'rejected' | 'suspended')
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Password don't match",
   path: ['confirmPassword']
