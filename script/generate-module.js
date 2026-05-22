@@ -32,7 +32,7 @@ const templates = {
         async getById(req: Request, res: Response): Promise<void> {
             const paramsId = req.params.id
             if(!paramsId) {
-              throw new AppError('Id not found!')
+              throw new AppError(404, 'Id not found!')
             }
             try{
                 const data = await ${name}Service.findById(paramsId as string);
@@ -69,7 +69,7 @@ const templates = {
         async update(req: Request, res: Response): Promise<void> {
             const paramsId = req.params.id
             if(!paramsId) {
-              throw new AppError('Id not found!')
+              throw new AppError(404, 'Id not found!')
             }
             try {
                 const data = await ${name}Service.update(paramsId as string, req.body);
@@ -87,7 +87,7 @@ const templates = {
             try {
                 const paramsId = req.params.id
                 if (!paramsId) {
-                  throw new AppError("Id not found!");
+                  throw new AppError(404, 'Id not found!')
                 }
                 await ${name}Service.delete(paramsId as string)
                 res.status(200).json({
