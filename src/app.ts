@@ -5,11 +5,13 @@ import cors from "cors";
 import router from "./app/routes";
 import notFound from "./app/middlewares/notFound";
 import { globalErrorHandler } from "./app/middlewares/globalErrorHandler";
+import cookieParser from 'cookie-parser'
 
 const app = express();
 
 // Security & Cors
 app.use(cors());
+app.use(cookieParser())
 
 // Body parser
 app.use(express.json({ limit: "10mb" }));
