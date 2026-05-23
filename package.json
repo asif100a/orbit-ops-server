@@ -4,8 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "bun --watch src/server.ts",
-    "start": "bun src/server.ts",
+    "dev": "node init && bun --watch src/server.ts",
+    "start": "node init && bun src/server.ts",
     "gen:module": "node script/generate-module.js"
   },
   "devDependencies": {
