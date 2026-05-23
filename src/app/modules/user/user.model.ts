@@ -18,6 +18,12 @@ const userSchema = new Schema<UserType>(
       trim: true,
       required: [true, '"Password" is required'],
     },
+    role: {
+      type: String,
+      trim: true,
+      enum: ["USER", "ADMIN", "SUPER_ADMIN"],
+      required: [true, '"Role" is required'],
+    },
     companyId: {
       type: Schema.Types.ObjectId,
       required: [true, '"Company Id" is required'],

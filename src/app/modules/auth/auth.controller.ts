@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { authService } from "./auth.service";
 import type { UserType } from "../user/user.interface";
+import { clearAuthCookies, setAuthCookie } from "../../utils/cookie.utils";
 
 export class AuthController {
   async handleRegister(
@@ -26,14 +27,49 @@ export class AuthController {
     next: NextFunction,
   ): Promise<void> {
     try {
-      const result = await authService.login(req.body);
+      const {user, accessToken, refreshToken} = await authService.login(req.body);
+
+      setAuthCookie(res, accessToken, refreshToken)
+
       res.status(200).json({
         success: true,
         message: "User created successfully",
-        data: result,
+        data: user,
       });
     } catch (error) {
       next(error);
+    }
+  }
+
+  async handleRefresh(req: Request, res: Response, next: NextFunction): Promise<void>{
+    try {
+      const {refreshToken} = req.cookies;
+      const {accessToken, refreshToken: newRefreshToken} = await authService.refresh(refreshToken);
+
+      setAuthCookie(res, accessToken, newRefreshToken);
+
+      res.status(200).json({
+        success: true,
+        message: "Tokens refreshed successfully"
+      })
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  async handleLogout (req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const {refreshToken} = req.cookies;
+
+      await authService.logout(refreshToken)
+      clearAuthCookies(res)
+
+      res.status(200).json({
+        success: true,
+        message: "Logged out successfully"
+      })
+    } catch (error) {
+      next(error)
     }
   }
 }

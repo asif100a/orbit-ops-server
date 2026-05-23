@@ -1,8 +1,15 @@
 import jwt, { type SignOptions } from "jsonwebtoken";
 import { envConfig } from "../config/env";
 import AppError from "../errorHandlers/AppError";
+import type { UserRole } from "../types";
 
-const generateAccessToken = (payload: {}) => {
+export interface TokenPayloadType {
+    id: string;
+    email: string;
+    role: UserRole
+}
+
+const generateAccessToken = (payload: TokenPayloadType) => {
   const accessSecret = envConfig.JWT_ACCESS_SECRET;
   const expiresIn = envConfig.JWT_ACCESS_EXPIRES_IN as SignOptions["expiresIn"];
   if (!accessSecret) {
@@ -15,7 +22,7 @@ const generateAccessToken = (payload: {}) => {
   });
 };
 
-const generateRefreshToken = (payload: {}) => {
+const generateRefreshToken = (payload: TokenPayloadType) => {
   const refreshSecret = envConfig.JWT_REFRESH_TOKEN;
   const expiresIn = envConfig.JWT_REFRESH_EXPIRES_IN as SignOptions["expiresIn"];
   if (!refreshSecret) {
