@@ -6,10 +6,11 @@ const BASE_DIR = "src/app/modules";
 
 // ------------------Templates-----------------
 const templates = {
-  controller: (name, pascal) => `import {Request, Response} from 'express'
+  controller: (name, pascal) => `
+    import type {Request, Response} from 'express'
     import {${pascal}Service} from './${name}.service';
-    import catchAsync from '../src/app/utils/index'
-    import ${pascal}ResponseType from './${name}.interface
+    import { catchAsync } from '../../utils/index'
+    import type { ${pascal}ResponseType } from './${name}.interface'
     
     const ${name}Service = new ${pascal}Service();
     
@@ -20,29 +21,33 @@ const templates = {
                 res.status(200).json({
                 success: true,
                 message: "The ${name} data retrieved successfully",
-                data;
+                data
             })
-            } catch(error: ${pascal}ResponseType) {
+            } catch(error: any) {
                 catchAsync(res, error)
             }
         }
 
         async getById(req: Request, res: Response): Promise<void> {
+            const paramsId = req.params.id
+            if(!paramsId) {
+              throw new Error('Id not found!')
+            }
             try{
-                const data = await ${name}Service.findById(req.params.id);
+                const data = await ${name}Service.findById(paramsId as string);
                 if(!data) {
                     res.status(404).json({
                         success: false,
                         message: "${pascal} not found"
-                        return
-                    })
+                        })
+                    return;
                 }
                 res.status(200).json({
                 success: true,
                 message: "The ${name} data retrieved successfully",
-                data;
+                data
             })
-            } catch(error: ${pascal}ResponseType) {
+            } catch(error: any) {
                catchAsync(res, error)
             }
         }
@@ -55,20 +60,24 @@ const templates = {
                     message: "The ${name} data created successfully",
                     data
                 })
-            }catch(error: ${pascal}ResponseType) {
+            }catch(error: any) {
                 catchAsync(res, error)
             }
         }
 
         async update(req: Request, res: Response): Promise<void> {
+            const paramsId = req.params.id
+            if(!paramsId) {
+              throw new Error('Id not found!')
+            }
             try {
-                const data = await ${name}Service.update(req.params.id, request.body);
+                const data = await ${name}Service.update(paramsId as string, req.body);
                 res.status(200).json({
                     success: true,
                     message: "The ${name} data updated successfully",
                     data
                 })
-            } catch (error: ${pascal}ResponseType) {
+            } catch (error: any) {
                 catchAsync(res, error)
             }
         }
@@ -76,12 +85,15 @@ const templates = {
         async delete(req: Request, res: Response): Promise<void> {
             try {
                 const paramsId = req.params.id
-                await ${name}Service.delete(paramsId)
+                if (!paramsId) {
+                  throw new Error("Id not found!");
+                }
+                await ${name}Service.delete(paramsId as string)
                 res.status(200).json({
                     success: true,
                     message: "The ${name} data deleted successfully",
                 })
-            } catch (error: ${pascal}ResponseType) {
+            } catch (error: any) {
                 catchAsync(res, error)
             }
         }
@@ -89,7 +101,7 @@ const templates = {
     }`,
 
   service: (name, pascal) => `
-    import { I${pascal} } from './${name}.interface';
+    import { type ${pascal}Type } from './${name}.interface';
     import { ${pascal}Model } from './${name}.model';
 
     export class ${pascal}Service {
@@ -101,7 +113,7 @@ const templates = {
             return ${pascal}Model.findById(id);
         }
 
-        async create(data: Partial<${pascal}Type>): Promise<${pascal}> {
+        async create(data: Partial<${pascal}Type>): Promise<${pascal}Type> {
             return ${pascal}Model.create(data);
         }
 
@@ -116,33 +128,33 @@ const templates = {
     `,
 
   interface: (name, pascal) => `
-        export interface ${pascal}Type {
+  export interface ${pascal}Type {
 
-        }
+  }
 
-        export interface ${pascal}ResponseType {
-            success: boolean;
-            data?: ${pascal}Type | ${pascal}Type[];
-            message: string
-        }
-    `,
+  export interface ${pascal}ResponseType {
+    success: boolean;
+    data?: ${pascal}Type | ${pascal}Type[];
+    message: string
+  }
+  `,
   model: (name, pascal) => `
-        import mongoose, {Schema, Document} from 'mongoose';
-        import ${pascal}Type from './${name}.interface';
+  import mongoose, {Schema, Document} from 'mongoose';
+  import type { ${pascal}Type } from './${name}.interface';
 
-        export interface ${pascal}DocumentType extends ${pascal}Type, Document {}
+  export interface ${pascal}DocumentType extends ${pascal}Type, Document {}
 
-        const ${pascal}Schema: Schema = new Schema(
-            {
-                // TODO: Define ${pascal} schema fields
-            },
-            {
-                timestamps: true,
-                versionKey: false
-            }
-        )
+  const ${pascal}Schema: Schema = new Schema(
+    {
+    // TODO: Define ${pascal} schema fields
+    },
+    {
+      timestamps: true,
+      versionKey: false
+      }
+    )
         
-        export const ${pascal}Model = mongoose.model<${pascal}DocumentType>('${pascal}', ${pascal}Schema);
+    export const ${pascal}Model = mongoose.model<${pascal}DocumentType>('${pascal}', ${pascal}Schema);
     `,
 
   route: (name, pascal) => `
@@ -152,11 +164,11 @@ const templates = {
     const ${name}Route = Router();
     const ${name}Controller = new ${pascal}Controller();
 
-    router.get('/', ${name}Controller.getAll.bind(${name}Controller));
-    router.get('/:id', ${name}Controller.getById.bind(${name}Controller));
-    router.post('/', ${name}Controller.create.bind(${name}Controller));
-    router.put('/:id', ${name}Controller.update.bind(${name}Controller));
-    router.delete('/:id', ${name}Controller.delete.bind(${name}Controller));
+    ${name}Route.get('/', ${name}Controller.getAll.bind(${name}Controller));
+    ${name}Route.get('/:id', ${name}Controller.getById.bind(${name}Controller));
+    ${name}Route.post('/', ${name}Controller.create.bind(${name}Controller));
+    ${name}Route.put('/:id', ${name}Controller.update.bind(${name}Controller));
+    ${name}Route.delete('/:id', ${name}Controller.delete.bind(${name}Controller));
 
     export default ${name}Route;
     `,
@@ -171,9 +183,9 @@ const templates = {
 
   index: (name, pascal) => `
     export * from './${name}.controller'
-    export * from ''./${name}.service'
-    export * from ''./${name}.interface'
-    export * from ''./${name}.model'
+    export * from './${name}.service'
+    export * from './${name}.interface'
+    export * from './${name}.model'
     export * from './${name}.route';
     `,
 };
