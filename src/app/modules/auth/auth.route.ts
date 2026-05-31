@@ -7,8 +7,8 @@ import { checkAuth } from "../../middlewares/checkAuth";
 const authRoute = Router();
 
 authRoute.post("/register", validateRequest(UserSchema), authController.handleRegister.bind(authController));
-authRoute.post("/login", authController.handleLogin).bind(authController);
-authRoute.post("/refresh", authController.handleRefresh.bind(authController))
-authRoute.post('/logout', checkAuth(), authController.handleLogout.bind(authController))
+authRoute.post("/login", authController.handleLogin.bind(authController));
+authRoute.post("/refresh", authController.handleRefresh.bind(authController));
+authRoute.post('/logout', checkAuth(), authController.handleLogout.bind(authController));
 
 export default authRoute;

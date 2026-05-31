@@ -25,16 +25,16 @@ const userSchema = new Schema<UserType>(
       required: [true, '"Role" is required'],
     },
     companyId: {
-      type: Schema.Types.ObjectId,
-      required: [true, '"Company Id" is required'],
+      type: Schema.Types.ObjectId || null,
+      required: false,
     },
     departmentId: {
-      type: Schema.Types.ObjectId,
-      required: [true, '"Department Id" is required'],
+      type: Schema.Types.ObjectId || null,
+      required: false,
     },
     teamId: {
-      type: Schema.Types.ObjectId,
-      required: [true, '"Team Id" is required'],
+      type: Schema.Types.ObjectId || null,
+      required: false,
     },
     isActive: {
       type: Boolean,

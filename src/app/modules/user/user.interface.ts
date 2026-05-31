@@ -7,9 +7,9 @@ export interface UserType {
   password: string;
   confirmPassword: string;
   role: UserRole,
-  companyId: Types.ObjectId;
-  departmentId: Types.ObjectId;
-  teamId: Types.ObjectId;
+  companyId?: Types.ObjectId | null;
+  departmentId?: Types.ObjectId | null;
+  teamId?: Types.ObjectId | null;
   isActive: boolean;
   isVerified: boolean;
   isDeleted: boolean;

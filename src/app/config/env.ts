@@ -20,6 +20,8 @@ interface EnvConfig {
   EXPRESS_SESSION_SECRET: string
 
   FRONTEND_URL: string
+
+  REDIS_URL: string
 }
 
 export const envConfig: EnvConfig = {
@@ -41,5 +43,7 @@ export const envConfig: EnvConfig = {
 
   EXPRESS_SESSION_SECRET: process.env.EXPRESS_SESSION_SECRET as string,
 
-  FRONTEND_URL: process.env.FRONTEND_URL as string
+  FRONTEND_URL: process.env.FRONTEND_URL as string,
+
+  REDIS_URL: process.env.REDIS_URL as string,
 }

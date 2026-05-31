@@ -17,8 +17,6 @@ export class AuthService {
   constructor() {}
 
   async register(input: UserType): Promise<any> {
-    console.log("Input data: ", input);
-
     // Hash the password
     const brcyptSalt = Number(envConfig.BCRYPT_SALT);
     if (!brcyptSalt) {
@@ -38,7 +36,10 @@ export class AuthService {
     };
     const result = await User.create(data);
 
-    return result;
+    const formattedResult = result.toObject();
+    const { password, ...resultWithoutPassword } = formattedResult;
+
+    return resultWithoutPassword;
   }
 
   async login(input: { email: string; password: string }): Promise<AuthTokens & {user: UserType}> {
@@ -67,6 +68,10 @@ export class AuthService {
     refreshTokenStore.add(refreshToken);
 
     return { accessToken, refreshToken, user };
+  }
+
+  async verifyOtp(email: string): Promise<void> {
+    
   }
 
   async refresh(refreshToken: string): Promise<AuthTokens> {

@@ -29,6 +29,7 @@
     "express-session": "^1.19.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.6.2",
+    "redis": "^6.0.0",
     "zod": "^4.4.3"
   }
 }
