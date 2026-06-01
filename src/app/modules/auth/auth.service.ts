@@ -1,5 +1,6 @@
 import { envConfig } from "../../config/env";
 import AppError from "../../errorHandlers/AppError";
+import { sendOtpEmail } from "../../utils/message.utils";
 import { deleteOtp, getOtp, setOtp } from "../../utils/redis.utils";
 import { handleToken, type TokenPayloadType } from "../../utils/token.utils";
 import type { UserType } from "../user/user.interface";
@@ -122,7 +123,16 @@ export class AuthService {
     await setOtp(email, otpCode, 600)
 
     // Send via email or SMS
-    console.log(`OTP sent to ${email}: ${otpCode}`)
+    try {
+      await sendOtpEmail({
+        to: email,
+        otp: otpCode
+      })
+      console.log(`OTP sent to ${email}: ${otpCode}`)
+    } catch (error) {
+      await deleteOtp(email);
+      throw new AppError(502, 'Failed to send OTP')
+    }
   }
 
   async verifyOtp(email: string, otp: string): Promise<void> {
