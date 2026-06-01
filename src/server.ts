@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import "colors";
 import { envConfig } from "./app/config/env";
 import app from "./app";
+import { initializeRedis } from "./app/utils/redis.utils";
 
 let server: Server;
 const port = envConfig.PORT;
@@ -24,6 +25,7 @@ const startServer = async () => {
 };
 
 (async () => {
+  await initializeRedis(); // Before starting server
   await startServer();
 })();
 

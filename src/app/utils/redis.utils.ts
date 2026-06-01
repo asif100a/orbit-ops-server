@@ -38,7 +38,7 @@ export const getOtp = async(email: string): Promise<string | null> => {
     return await client.get(key)
 }
 
-export const deleteOtp = async(email: string): Promise<void>{
+export const deleteOtp = async(email: string): Promise<void> => {
     const client = getRedisClient()
     const key = `otp:${email}`
     await client.del(key)

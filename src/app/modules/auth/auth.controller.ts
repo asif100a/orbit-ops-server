@@ -27,9 +27,11 @@ export class AuthController {
     next: NextFunction,
   ): Promise<void> {
     try {
-      const {user, accessToken, refreshToken} = await authService.login(req.body);
+      const { user, accessToken, refreshToken } = await authService.login(
+        req.body,
+      );
 
-      setAuthCookie(res, accessToken, refreshToken)
+      setAuthCookie(res, accessToken, refreshToken);
 
       res.status(200).json({
         success: true,
@@ -41,35 +43,62 @@ export class AuthController {
     }
   }
 
-  async handleRefresh(req: Request, res: Response, next: NextFunction): Promise<void>{
+  async handleRefresh(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
     try {
-      const {refreshToken} = req.cookies;
-      const {accessToken, refreshToken: newRefreshToken} = await authService.refresh(refreshToken);
+      const { refreshToken } = req.cookies;
+      const { accessToken, refreshToken: newRefreshToken } =
+        await authService.refresh(refreshToken);
 
       setAuthCookie(res, accessToken, newRefreshToken);
 
       res.status(200).json({
         success: true,
-        message: "Tokens refreshed successfully"
-      })
+        message: "Tokens refreshed successfully",
+      });
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 
-  async handleLogout (req: Request, res: Response, next: NextFunction): Promise<void> {
+  async handleLogout(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
     try {
-      const {refreshToken} = req.cookies;
+      const { refreshToken } = req.cookies;
 
-      await authService.logout(refreshToken)
-      clearAuthCookies(res)
+      await authService.logout(refreshToken);
+      clearAuthCookies(res);
 
       res.status(200).json({
         success: true,
-        message: "Logged out successfully"
-      })
+        message: "Logged out successfully",
+      });
     } catch (error) {
-      next(error)
+      next(error);
+    }
+  }
+
+  async handleVerifyOtp(
+    req: Request<{}, {}, { email: string; otp: string }>,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const { email, otp } = req.body;
+      await authService.verifyOtp(email, otp);
+
+      res.status(200).json({
+        success: true,
+        message: "OTP verified successfully",
+      });
+    } catch (error) {
+      next(error);
     }
   }
 }

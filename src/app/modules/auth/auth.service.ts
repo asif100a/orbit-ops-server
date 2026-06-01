@@ -1,5 +1,6 @@
 import { envConfig } from "../../config/env";
 import AppError from "../../errorHandlers/AppError";
+import { deleteOtp, getOtp, setOtp } from "../../utils/redis.utils";
 import { handleToken, type TokenPayloadType } from "../../utils/token.utils";
 import type { UserType } from "../user/user.interface";
 import { User } from "../user/user.model";
@@ -16,6 +17,7 @@ interface AuthTokens {
 export class AuthService {
   constructor() {}
 
+  // Register logic
   async register(input: UserType): Promise<any> {
     // Hash the password
     const brcyptSalt = Number(envConfig.BCRYPT_SALT);
@@ -36,12 +38,17 @@ export class AuthService {
     };
     const result = await User.create(data);
 
+    // Generate and send OTP 
+    const otp = this.generateOtp();
+    await this.sendOtp(result.email, otp)
+
     const formattedResult = result.toObject();
     const { password, ...resultWithoutPassword } = formattedResult;
 
     return resultWithoutPassword;
   }
 
+  // Login logic
   async login(input: { email: string; password: string }): Promise<AuthTokens & {user: UserType}> {
     // 1. Find the user
     const user = await User.findOne({ email: input.email }).select("+password");
@@ -70,16 +77,15 @@ export class AuthService {
     return { accessToken, refreshToken, user };
   }
 
-  async verifyOtp(email: string): Promise<void> {
-    
-  }
-
   async refresh(refreshToken: string): Promise<AuthTokens> {
     if (!refreshToken || !refreshTokenStore.has(refreshToken)) {
       throw new AppError(403, "Refresh token invalid or not found");
     }
 
     const decoded = handleToken.verifyRefreshToken(refreshToken);
+    if(typeof decoded === 'string') {
+      throw new AppError(403, 'Invalid token format')
+    }
     const payload: TokenPayloadType = {
       id: decoded.id,
       email: decoded.email,
@@ -98,6 +104,43 @@ export class AuthService {
 
   async logout(refreshToken: string): Promise<void> {
     refreshTokenStore.delete(refreshToken);
+  }
+
+  private generateOtp(): string {
+    return Math.floor(100000 + Math.random() * 900000).toString() // 6 digit otp
+  }
+
+  async sendOtp(email: string, otp?: string): Promise<void> {
+    const user = await User.findOne({email})
+    if(!user) {
+      throw new AppError(404, 'User not found!')
+    }
+
+    const otpCode = otp || this.generateOtp()
+
+    // Store OTP in Redis with 10 minutes expiry
+    await setOtp(email, otpCode, 600)
+
+    // Send via email or SMS
+    console.log(`OTP sent to ${email}: ${otpCode}`)
+  }
+
+  async verifyOtp(email: string, otp: string): Promise<void> {
+    const storedOtp = await getOtp(email);
+
+    if(!storedOtp || storedOtp !== otp) {
+      throw new AppError(400, "Invalid or expired OTP")
+    }
+
+    // Mark user as verified
+    const user = await User.findOneAndUpdate({email}, {isVerified: true, isActive: true}, {new: true})
+
+    if(!user) {
+      throw new AppError(404, "User not found!")
+    }
+  
+    // Delete OTP from Redis after successful verification
+    await deleteOtp(email)
   }
 }
 
