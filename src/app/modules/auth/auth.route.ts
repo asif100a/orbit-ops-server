@@ -10,6 +10,6 @@ authRoute.post("/register", validateRequest(UserSchema), authController.handleRe
 authRoute.post("/login", authController.handleLogin.bind(authController));
 authRoute.post("/refresh", authController.handleRefresh.bind(authController));
 authRoute.post('/logout', checkAuth(), authController.handleLogout.bind(authController));
-authRoute.post('/veify-otp', authController.handleVerifyOtp.bind(authController))
+authRoute.post('/verify-otp', authController.handleVerifyOtp.bind(authController))
 
 export default authRoute;
