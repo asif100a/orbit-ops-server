@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import { authService } from "./auth.service";
 import type { UserType } from "../user/user.interface";
 import { clearAuthCookies, setAuthCookie } from "../../utils/cookie.utils";
-import AppError from "../../errorHandlers/AppError";
+import type { VerifyOtp } from "./auth.validation";
 
 export class AuthController {
   async handleRegister(
@@ -86,16 +86,12 @@ export class AuthController {
   }
 
   async handleVerifyOtp(
-    req: Request<{}, {}, { email: string; otp: string }>,
+    req: Request<{}, {}, VerifyOtp>,
     res: Response,
     next: NextFunction,
   ): Promise<void> {
     try {
-      const payload = req.body;
-      if(!payload) {
-        throw new AppError(404, 'Payload is missing in verify otp')
-      }
-      const { email, otp } = payload;
+      const { email, otp } = req.body;
       await authService.verifyOtp(email, otp);
 
       res.status(200).json({
