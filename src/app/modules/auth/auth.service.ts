@@ -39,18 +39,29 @@ export class AuthService {
     };
     const result = await User.create(data);
 
-    // Generate and send OTP 
+    // Generate and send OTP
     const otp = this.generateOtp();
-    await this.sendOtp(result.email, otp)
+    await this.sendOtp(result.email, otp);
 
     const formattedResult = result.toObject();
     const { password, ...resultWithoutPassword } = formattedResult;
 
-    return resultWithoutPassword;
+    // Generate verify token
+    const tokenPayload = {
+      id: result._id.toString(),
+      email: result.email,
+      purpose: "verify-otp",
+    } as const;
+    const verifyToken = handleToken.generateVerifyToken(tokenPayload)
+
+    return { user: resultWithoutPassword, verifyToken };
   }
 
   // Login logic
-  async login(input: { email: string; password: string }): Promise<AuthTokens & {user: UserType}> {
+  async login(input: {
+    email: string;
+    password: string;
+  }): Promise<AuthTokens & { user: UserType }> {
     // 1. Find the user
     const user = await User.findOne({ email: input.email }).select("+password");
     if (!user || !user.password) {
@@ -84,8 +95,8 @@ export class AuthService {
     }
 
     const decoded = handleToken.verifyRefreshToken(refreshToken);
-    if(typeof decoded === 'string') {
-      throw new AppError(403, 'Invalid token format')
+    if (typeof decoded === "string") {
+      throw new AppError(403, "Invalid token format");
     }
     const payload: TokenPayloadType = {
       id: decoded.id,
@@ -108,49 +119,77 @@ export class AuthService {
   }
 
   private generateOtp(): string {
-    return Math.floor(100000 + Math.random() * 900000).toString() // 6 digit otp
+    return Math.floor(100000 + Math.random() * 900000).toString(); // 6 digit otp
   }
 
   async sendOtp(email: string, otp?: string): Promise<void> {
-    const user = await User.findOne({email})
-    if(!user) {
-      throw new AppError(404, 'User not found!')
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw new AppError(404, "User not found!");
     }
 
-    const otpCode = otp || this.generateOtp()
+    const otpCode = otp || this.generateOtp();
 
     // Store OTP in Redis with 10 minutes expiry
-    await setOtp(email, otpCode, 600)
+    await setOtp(email, otpCode, 600);
 
     // Send via email or SMS
     try {
       await sendOtpEmail({
         to: email,
-        otp: otpCode
-      })
-      console.log(`OTP sent to ${email}: ${otpCode}`)
+        otp: otpCode,
+      });
+      console.log(`OTP sent to ${email}: ${otpCode}`);
     } catch (error) {
       await deleteOtp(email);
-      throw new AppError(502, 'Failed to send OTP')
+      throw new AppError(502, "Failed to send OTP");
     }
   }
 
-  async verifyOtp(email: string, otp: string): Promise<void> {
+  async verifyOtp(email: string, otp: string): Promise<{
+    user: Partial<UserType>,
+    accessToken: string;
+    refreshToken: string
+  }> {
     const storedOtp = await getOtp(email);
 
-    if(!storedOtp || storedOtp !== otp) {
-      throw new AppError(400, "Invalid or expired OTP")
+    if (!storedOtp || storedOtp !== otp) {
+      throw new AppError(400, "Invalid or expired OTP");
     }
 
     // Mark user as verified
-    const user = await User.findOneAndUpdate({email}, {isVerified: true, isActive: true}, {new: true})
+    const user = await User.findOneAndUpdate(
+      { email },
+      { isVerified: true, isActive: true },
+      { new: true },
+    );
 
-    if(!user) {
-      throw new AppError(404, "User not found!")
+    if (!user) {
+      throw new AppError(404, "User not found!");
     }
-  
+
     // Delete OTP from Redis after successful verification
-    await deleteOtp(email)
+    await deleteOtp(email);
+
+    const payload = {
+      id: user._id.toString(),
+      email: user.email,
+      role: user.role
+    }
+
+    const accessToken = handleToken.generateAccessToken(payload);
+const refreshToken = handleToken.generateRefreshToken(payload)
+
+refreshTokenStore.add(refreshToken);
+
+const formattedUser = user.toObject()
+const {password, ...userWithoutPass} = formattedUser;
+
+return {
+  user: userWithoutPass,
+  accessToken,
+  refreshToken
+}
   }
 }
 

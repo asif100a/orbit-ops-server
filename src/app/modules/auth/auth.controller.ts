@@ -3,6 +3,8 @@ import { authService } from "./auth.service";
 import type { UserType } from "../user/user.interface";
 import { clearAuthCookies, setAuthCookie } from "../../utils/cookie.utils";
 import type { VerifyOtp } from "./auth.validation";
+import AppError from "../../errorHandlers/AppError";
+import { handleToken } from "../../utils/token.utils";
 
 export class AuthController {
   async handleRegister(
@@ -91,12 +93,28 @@ export class AuthController {
     next: NextFunction,
   ): Promise<void> {
     try {
-      const { email, otp } = req.body;
-      await authService.verifyOtp(email, otp);
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith("Bearer")) {
+        throw new AppError(401, "Verify token is missing");
+      }
+      const verifyToken = authHeader.split(" ")[1]
+      if(!verifyToken) {
+        throw new AppError(401, "Verify token is missing");
+      }
+      const decoded = handleToken.verifyToken(verifyToken)
+      if(typeof decoded === 'string' || decoded.purpose !== 'verify-otp') {
+        throw new AppError(401, "Invalid verify token")
+      }
+      const {email} = decoded;
+      const { otp } = req.body;
+      const {user, accessToken, refreshToken} = await authService.verifyOtp(email, otp);
+
+      setAuthCookie(res, accessToken, refreshToken)
 
       res.status(200).json({
         success: true,
         message: "OTP verified successfully",
+        data: user
       });
     } catch (error) {
       next(error);
