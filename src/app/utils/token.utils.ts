@@ -25,7 +25,7 @@ const generateAccessToken = (payload: TokenPayloadType) => {
 
 // Generate Refresh token
 const generateRefreshToken = (payload: TokenPayloadType) => {
-  const refreshSecret = envConfig.JWT_REFRESH_TOKEN;
+  const refreshSecret = envConfig.JWT_REFRESH_SECRET;
   const expiresIn = envConfig.JWT_REFRESH_EXPIRES_IN as SignOptions["expiresIn"];
   if (!refreshSecret) {
     throw new AppError(400, "JWT refresh token not found!");
@@ -67,7 +67,7 @@ const verifyAccessToken = (token: string) => {
 
 // Verify Refresh Token
 const verifyRefreshToken = (token: string) => {
-  const refreshSecret = envConfig.JWT_REFRESH_TOKEN;
+  const refreshSecret = envConfig.JWT_REFRESH_SECRET;
 
   if (!refreshSecret) {
     throw new AppError(400, "JWT refresh token not found!");

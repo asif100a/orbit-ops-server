@@ -12,7 +12,7 @@ interface EnvConfig {
   JWT_ACCESS_SECRET: string;
   JWT_ACCESS_EXPIRES_IN: string;
 
-  JWT_REFRESH_TOKEN: string;
+  JWT_REFRESH_SECRET: string;
   JWT_REFRESH_EXPIRES_IN: string;
 
   JWT_VERIFY_SECRET: string;
@@ -42,7 +42,7 @@ export const envConfig: EnvConfig = {
   JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET as string,
   JWT_ACCESS_EXPIRES_IN: process.env.JWT_ACCESS_EXPIRES_IN as string,
 
-  JWT_REFRESH_TOKEN: process.env.JWT_REFRESH_TOKEN as string,
+  JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET as string,
   JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN as string,
 
   JWT_VERIFY_SECRET: process.env.JWT_VERIFY_SECRET as string,

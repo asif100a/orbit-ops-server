@@ -52,7 +52,7 @@ export class AuthService {
       email: result.email,
       purpose: "verify-otp",
     } as const;
-    const verifyToken = handleToken.generateVerifyToken(tokenPayload)
+    const verifyToken = handleToken.generateVerifyToken(tokenPayload);
 
     return { user: resultWithoutPassword, verifyToken };
   }
@@ -146,10 +146,13 @@ export class AuthService {
     }
   }
 
-  async verifyOtp(email: string, otp: string): Promise<{
-    user: Partial<UserType>,
+  async verifyOtp(
+    email: string,
+    otp: string,
+  ): Promise<{
+    user: Partial<UserType>;
     accessToken: string;
-    refreshToken: string
+    refreshToken: string;
   }> {
     const storedOtp = await getOtp(email);
 
@@ -174,22 +177,22 @@ export class AuthService {
     const payload = {
       id: user._id.toString(),
       email: user.email,
-      role: user.role
-    }
+      role: user.role,
+    };
 
     const accessToken = handleToken.generateAccessToken(payload);
-const refreshToken = handleToken.generateRefreshToken(payload)
+    const refreshToken = handleToken.generateRefreshToken(payload);
 
-refreshTokenStore.add(refreshToken);
+    refreshTokenStore.add(refreshToken);
 
-const formattedUser = user.toObject()
-const {password, ...userWithoutPass} = formattedUser;
+    const formattedUser = user.toObject();
+    const { password, ...userWithoutPass } = formattedUser;
 
-return {
-  user: userWithoutPass,
-  accessToken,
-  refreshToken
-}
+    return {
+      user: userWithoutPass,
+      accessToken,
+      refreshToken,
+    };
   }
 }
 
