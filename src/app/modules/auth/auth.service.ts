@@ -20,6 +20,12 @@ export class AuthService {
 
   // Register logic
   async register(input: UserType): Promise<any> {
+    // Check if the user duplicate
+    const existedUser = await User.findOne({ email: input.email });
+    if (existedUser) {
+      throw new AppError(409, "This email already exists");
+    }
+
     // Hash the password
     const brcyptSalt = Number(envConfig.BCRYPT_SALT);
     if (!brcyptSalt) {
