@@ -1,0 +1,17 @@
+service:
+  app:
+    build:
+      context: .
+      target: deps
+    working_dir: /app
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npx tsx watch src/server.ts
+    ports:
+      - 5000:5000
+    env_file:
+      - .env
+    depends_on:
+      - mongo
+      - redis

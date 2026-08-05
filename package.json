@@ -4,12 +4,14 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "build": "tsc",
     "dev": "bun --watch src/server.ts",
-    "start": "bun src/server.ts",
+    "start": "node dist/server.js",
     "gen:module": "node script/generate-module.js"
   },
   "devDependencies": {
     "@types/bun": "latest",
+    "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/express-session": "^1.19.0",
@@ -21,7 +23,6 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "@types/cookie-parser": "^1.4.10",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
