@@ -4,15 +4,31 @@ import AppError from "../errorHandlers/AppError";
 
 let redisClient: RedisClientType | null = null;
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export const initializeRedis = async () => {
   redisClient = createClient({
     url: envConfig.REDIS_URL,
+    socket: {
+      connectTimeout: 10_000,
+    },
   });
 
   redisClient.on("error", (err) => console.error("Redis error: ", err));
-  await redisClient.connect();
 
-  return redisClient;
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= 10; attempt++) {
+    try {
+      await redisClient.connect();
+      return redisClient;
+    } catch (error) {
+      lastError = error;
+      console.warn(`Redis connection attempt ${attempt} failed, retrying...`);
+      await sleep(1000);
+    }
+  }
+
+  throw lastError;
 };
 
 export const getRedisClient = (): RedisClientType => {

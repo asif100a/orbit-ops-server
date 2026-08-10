@@ -144,7 +144,7 @@ const templates = {
 
   export interface ${pascal}DocumentType extends ${pascal}Type, Document {}
 
-  const ${pascal}Schema: Schema = new Schema(
+  const ${pascal}Schema: Schema = new Schema<${pascal}Type>(
     {
     // TODO: Define ${pascal} schema fields
     },
