@@ -1,7 +1,5 @@
+import { z } from "zod";
 
-    import { z } from 'zod'
+export const CompanySchema = z.object({});
 
-    export const CompanySchema = z.object({});
-
-    export type Company = z.infer<typeof CompanySchema>
-    
+export type Company = z.infer<typeof CompanySchema>;
