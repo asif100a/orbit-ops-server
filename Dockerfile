@@ -1,14 +1,14 @@
 # ---- Stage 1: Install dependencies with Bun ----
 FROM oven/bun:1 AS deps
 WORKDIR /app
-COPY package.json bun.lockb ./
+COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
 
 # ---- Stage 2: Build TypeScript ----
 FROM deps AS build
 WORKDIR /app
 COPY . .
-RUN bun run build
+RUN bun build --target=node --outfile=dist/server.js src/server.ts
 
 # ---- Stage 3: Production runtime (Node, avoids Bun/bson crash) ----
 FROM node:22-alpine AS runner
@@ -19,5 +19,5 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY package.json ./
 
-EXPOSE 5000
+EXPOSE 8080
 CMD ["node", "dist/server.js"]

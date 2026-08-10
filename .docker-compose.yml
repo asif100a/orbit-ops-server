@@ -2,9 +2,13 @@ services:
   app:
     build: .
     ports:
-      - 5000:5000
+      - 8080:8080
     env_file:
       - .env
+    environment:
+      PORT: 8080
+      DB_URL: mongodb://mongo:27017/OrbitOps
+      REDIS_URL: redis://redis:6379
     depends_on:
       - mongo
       - redis
