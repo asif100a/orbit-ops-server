@@ -1,3 +1,4 @@
+// -------------------
 export const COMPANY_INDUSTRIES = [
   "Technology / Software",
   "IT Services",
@@ -31,3 +32,12 @@ export const COMPANY_INDUSTRIES = [
 ] as const;
 
 export type CompanyIndustry = typeof COMPANY_INDUSTRIES[number];
+
+// -------------------
+export const COMPANY_SIZE = ["1-10" , "11-50" , "51-200" , "201-500" , "500+"];
+
+export type CompanySize = typeof COMPANY_SIZE[number]
+
+// -------------------
+export const SUBSCRIPTION_PLANS = ["FREE" , "PRO" , "ENTERPRISE"]
+export type SubscriptionPlans = typeof SUBSCRIPTION_PLANS[number]
