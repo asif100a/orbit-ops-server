@@ -25,6 +25,9 @@ if(err.message === "bcrypt salt not found" || err.message.includes('BCRYPT_SALT'
 res.status(statusCode).json({
     success: false,
     message,
-    error: envConfig.NODE_ENV === 'development' ? err.stack : undefined
+    error: {
+        code: statusCode,
+        stack: envConfig.NODE_ENV === 'development' ? err.stack : undefined
+    }
 })
 }

@@ -67,7 +67,7 @@ export class AuthService {
   async login(input: {
     email: string;
     password: string;
-  }): Promise<AuthTokens & { user: UserType }> {
+  }): Promise<AuthTokens & { user: Partial<UserType> }> {
     // 1. Find the user
     const user = await User.findOne({ email: input.email }).select("+password");
     if (!user || !user.password) {
@@ -92,7 +92,9 @@ export class AuthService {
 
     refreshTokenStore.add(refreshToken);
 
-    return { accessToken, refreshToken, user };
+    const {password, ...withOutPassword} = user.toObject();
+
+    return { accessToken, refreshToken, user: withOutPassword };
   }
 
   async refresh(refreshToken: string): Promise<AuthTokens> {
