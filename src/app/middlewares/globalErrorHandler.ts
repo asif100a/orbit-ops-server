@@ -6,9 +6,13 @@ export const globalErrorHandler = (err: any, req: Request, res: Response, next: 
 let message = "Something went wrong!"
 
 // Handle known errors
+if(err.name === 'AppError') {
+    statusCode = err.statusCode;
+    message = err.message;
+}
 if(err.message === "bcrypt salt not found" || err.message.includes('BCRYPT_SALT')) {
     statusCode = 500
-    message: "Server configuration error: Bcrypt salt is missing"
+    message = "Server configuration error: Bcrypt salt is missing"
 }else if(err.name === 'ValidationError') {
     statusCode = 400
     message = err.message;
@@ -21,6 +25,6 @@ if(err.message === "bcrypt salt not found" || err.message.includes('BCRYPT_SALT'
 res.status(statusCode).json({
     success: false,
     message,
-    err: envConfig.NODE_ENV === 'development' ? err.stack : undefined
+    error: envConfig.NODE_ENV === 'development' ? err.stack : undefined
 })
 }

@@ -45,6 +45,7 @@ export class CompanyController {
 
   async create(req: Request, res: Response): Promise<void> {
     try {
+      console.log("Company Req log: ", req.body);
       const data = await companyService.create(req.body);
       res.status(201).json({
         success: true,
