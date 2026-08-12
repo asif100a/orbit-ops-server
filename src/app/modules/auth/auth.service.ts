@@ -130,7 +130,7 @@ export class AuthService {
     return Math.floor(100000 + Math.random() * 900000).toString(); // 6 digit otp
   }
 
-  async sendOtp(email: string, otp?: string): Promise<void> {
+  async sendOtp(email: string, otp?: string, otpType: string = 'register'): Promise<void> {
     const user = await User.findOne({ email });
     if (!user) {
       throw new AppError(404, "User not found!");
@@ -139,7 +139,7 @@ export class AuthService {
     const otpCode = otp || this.generateOtp();
 
     // Store OTP in Redis with 10 minutes expiry
-    await setOtp(email, otpCode, 600);
+    await setOtp(`${otpType}:${email}`, otpCode, 600);
 
     // Send via email or SMS
     try {
@@ -149,7 +149,7 @@ export class AuthService {
       });
       console.log(`OTP sent to ${email}: ${otpCode}`);
     } catch (error) {
-      await deleteOtp(email);
+      await deleteOtp(`${otpType}:${email}`);
       throw new AppError(502, "Failed to send OTP");
     }
   }
@@ -157,12 +157,13 @@ export class AuthService {
   async verifyOtp(
     email: string,
     otp: string,
+    otpType: string = 'register'
   ): Promise<{
     user: Partial<UserType>;
     accessToken: string;
     refreshToken: string;
   }> {
-    const storedOtp = await getOtp(email);
+    const storedOtp = await getOtp(`${otpType}:${email}`);
 
     if (!storedOtp || storedOtp !== otp) {
       throw new AppError(400, "Invalid or expired OTP");
@@ -180,7 +181,7 @@ export class AuthService {
     }
 
     // Delete OTP from Redis after successful verification
-    await deleteOtp(email);
+    await deleteOtp(`${otpType}:${email}`);
 
     const payload = {
       id: user._id.toString(),
@@ -201,6 +202,28 @@ export class AuthService {
       accessToken,
       refreshToken,
     };
+  }
+
+  async forgotPassword(email: string): Promise<{verifyToken: string}> {
+    const user = await User.findOne({email});
+
+    if(!user) {
+      throw new AppError(404, "User not found");
+    }
+
+    await this.sendOtp(email, undefined, 'forgot-password');
+
+    const verifyToken = handleToken.generateVerifyToken({
+      id: user._id.toString(),
+      email: user.email,
+      purpose: "verify-otp"
+    });
+
+    return { verifyToken };
+  }
+
+  async resetPassword(email: string, otp: string, newPassword: string): Promise<void> {
+    const storedOtp = await getOtp(``)
   }
 }
 
