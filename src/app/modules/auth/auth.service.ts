@@ -6,6 +6,7 @@ import { handleToken, type TokenPayloadType } from "../../utils/token.utils";
 import type { UserType } from "../user/user.interface";
 import { User } from "../user/user.model";
 import bcrypt from "bcryptjs";
+import crypto from 'crypto';
 
 // Replace with Redis in production
 const refreshTokenStore = new Set<string>();
@@ -56,7 +57,7 @@ export class AuthService {
     const tokenPayload = {
       id: result._id.toString(),
       email: result.email,
-      purpose: "verify-otp",
+      purpose: "register-otp",
     } as const;
     const verifyToken = handleToken.generateVerifyToken(tokenPayload);
 
@@ -133,37 +134,6 @@ export class AuthService {
     refreshTokenStore.delete(refreshToken);
   }
 
-  private generateOtp(): string {
-    return Math.floor(100000 + Math.random() * 900000).toString(); // 6 digit otp
-  }
-
-  async sendOtp(
-    email: string,
-    otp?: string,
-    otpType: string = "register",
-  ): Promise<void> {
-    const user = await User.findOne({ email });
-    if (!user) {
-      throw new AppError(404, "User not found!");
-    }
-
-    const otpCode = otp || this.generateOtp();
-
-    // Store OTP in Redis with 10 minutes expiry
-    await setOtp(`${otpType}:${email}`, otpCode, 600);
-
-    // Send via email or SMS
-    try {
-      await sendOtpEmail({
-        to: email,
-        otp: otpCode,
-      });
-      console.log(`OTP sent to ${email}: ${otpCode}`);
-    } catch (error) {
-      await deleteOtp(`${otpType}:${email}`);
-      throw new AppError(502, "Failed to send OTP");
-    }
-  }
 
   async verifyOtp(
     email: string,
@@ -183,10 +153,15 @@ export class AuthService {
     }
 
     if (otpType === "forgot-password") {
+      const tokenId = crypto.randomUUID();
+
+      await setOtp(`reset-password-token:${tokenId}`, user.email, 600);
+
       const resetPasswordToken = handleToken.generateVerifyToken({
         id: user._id.toString(),
         email: user.email,
         purpose: "reset-password",
+        tokenId
       });
 
       await deleteOtp(`${otpType}:${email}`);
@@ -241,7 +216,7 @@ export class AuthService {
     const verifyToken = handleToken.generateVerifyToken({
       id: user._id.toString(),
       email: user.email,
-      purpose: "verify-otp",
+      purpose: "forgot-password-otp",
     });
 
     return { verifyToken };
@@ -253,8 +228,14 @@ export class AuthService {
   ): Promise<void> {
     const decoded = handleToken.verifyToken(resetPasswordToken);
 
-    if (typeof decoded === "string" || decoded.purpose !== "reset-password") {
+    if (typeof decoded === "string" || decoded.purpose !== "reset-password" || !decoded.tokenId) {
       throw new AppError(401, "Invalid reset password token");
+    }
+
+    const storedEmail = await getOtp(`reset-password-token:${decoded.tokenId}`);
+
+    if(!storedEmail || storedEmail !== decoded.email) {
+      throw new AppError(401, "Reset password token expired or already used")
     }
 
     const bcryptSalt = Number(envConfig.BCRYPT_SALT);
@@ -273,6 +254,41 @@ export class AuthService {
 
     if (!user) {
       throw new AppError(404, "User not found");
+    }
+
+    await deleteOtp(`reset-password-token:${decoded.tokenId}`);
+  }
+
+  // ----------------Utils Functions----------------
+  private generateOtp(): string {
+    return Math.floor(100000 + Math.random() * 900000).toString(); // 6 digit otp
+  }
+
+  async sendOtp(
+    email: string,
+    otp?: string,
+    otpType: string = "register",
+  ): Promise<void> {
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw new AppError(404, "User not found!");
+    }
+
+    const otpCode = otp || this.generateOtp();
+
+    // Store OTP in Redis with 10 minutes expiry
+    await setOtp(`${otpType}:${email}`, otpCode, 600);
+
+    // Send via email or SMS
+    try {
+      await sendOtpEmail({
+        to: email,
+        otp: otpCode,
+      });
+      console.log(`OTP sent to ${email}: ${otpCode}`);
+    } catch (error) {
+      await deleteOtp(`${otpType}:${email}`);
+      throw new AppError(502, "Failed to send OTP");
     }
   }
 }

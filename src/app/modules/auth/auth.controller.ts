@@ -102,7 +102,7 @@ export class AuthController {
         throw new AppError(401, "Invalid token");
       }
       const decoded = handleToken.verifyToken(verifyToken);
-      if (typeof decoded === "string" || decoded.purpose !== "verify-otp") {
+      if (typeof decoded === "string" || decoded.purpose !== "register-otp") {
         throw new AppError(401, "Invalid verify token");
       }
       const { email } = decoded;
@@ -159,7 +159,7 @@ export class AuthController {
 
       const decoded = handleToken.verifyToken(verifyToken);
 
-      if (typeof decoded === "string" || decoded.purpose !== "verify-otp") {
+      if (typeof decoded === "string" || decoded.purpose !== "forgot-password-otp") {
         throw new AppError(401, "Invalid verify token");
       }
 
