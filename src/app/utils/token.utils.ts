@@ -41,7 +41,7 @@ const generateRefreshToken = (payload: TokenPayloadType) => {
 const generateVerifyToken = (payload: {
   id: string,
   email: string,
-  purpose: "verify-otp" | "reset-password"
+  purpose: "verify-otp" | "forgot-password-otp" | "reset-password"
 }) => {
   const verifySecret = envConfig.JWT_VERIFY_SECRET
   const expiresIn = envConfig.JWT_VERIFY_EXPIRES_IN as SignOptions['expiresIn']

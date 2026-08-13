@@ -76,11 +76,18 @@ export class AuthService {
 
     // 2. Compare the password
     const isMatch = await bcrypt.compare(input.password, user?.password);
-    if (!isMatch) {
-      throw new AppError(401, "Invalid email or password");
-    }
+    if (!isMatch) throw new AppError(401, "Invalid email or password");
 
-    // 3. Generate tokens
+    // 3. If verify the user is verified
+    if (!user.isVerified) throw new AppError(401, "The user is not verified");
+
+    // 4. If the user is not active
+    if (!user.isActive) throw new AppError(401, "The user is not active");
+
+    // 5. If the user doesn't exist
+    if(user.isDeleted) throw new AppError(401, "The user is not exists");
+
+    // 4. Generate tokens
     const payload: TokenPayloadType = {
       id: user._id.toString(),
       email: user.email,
@@ -92,7 +99,7 @@ export class AuthService {
 
     refreshTokenStore.add(refreshToken);
 
-    const {password, ...withOutPassword} = user.toObject();
+    const { password, ...withOutPassword } = user.toObject();
 
     return { accessToken, refreshToken, user: withOutPassword };
   }
@@ -130,7 +137,11 @@ export class AuthService {
     return Math.floor(100000 + Math.random() * 900000).toString(); // 6 digit otp
   }
 
-  async sendOtp(email: string, otp?: string, otpType: string = 'register'): Promise<void> {
+  async sendOtp(
+    email: string,
+    otp?: string,
+    otpType: string = "register",
+  ): Promise<void> {
     const user = await User.findOne({ email });
     if (!user) {
       throw new AppError(404, "User not found!");
@@ -157,7 +168,7 @@ export class AuthService {
   async verifyOtp(
     email: string,
     otp: string,
-    otpType: string = 'register'
+    otpType: string = "register",
   ): Promise<any> {
     const storedOtp = await getOtp(`${otpType}:${email}`);
 
@@ -165,20 +176,22 @@ export class AuthService {
       throw new AppError(400, "Invalid or expired OTP");
     }
 
-    const user = await User.findOne({email})
+    const user = await User.findOne({ email });
 
-    if(!user) {
+    if (!user) {
       throw new AppError(404, "User not found!");
     }
 
-    if(otpType === 'forgot-password') {
+    if (otpType === "forgot-password") {
       const resetPasswordToken = handleToken.generateVerifyToken({
         id: user._id.toString(),
         email: user.email,
-        purpose: "reset-password"
+        purpose: "reset-password",
       });
 
-      return {resetPasswordToken};
+      await deleteOtp(`${otpType}:${email}`);
+
+      return { resetPasswordToken };
     }
 
     // Mark user as verified
@@ -216,46 +229,49 @@ export class AuthService {
     };
   }
 
-  async forgotPassword(email: string): Promise<{verifyToken: string}> {
-    const user = await User.findOne({email});
+  async forgotPassword(email: string): Promise<{ verifyToken: string }> {
+    const user = await User.findOne({ email });
 
-    if(!user) {
+    if (!user) {
       throw new AppError(404, "User not found");
     }
 
-    await this.sendOtp(email, undefined, 'forgot-password');
+    await this.sendOtp(email, undefined, "forgot-password");
 
     const verifyToken = handleToken.generateVerifyToken({
       id: user._id.toString(),
       email: user.email,
-      purpose: "verify-otp"
+      purpose: "verify-otp",
     });
 
     return { verifyToken };
   }
 
-  async resetPassword(resetPasswordToken: string, newPassword: string): Promise<void> {
+  async resetPassword(
+    resetPasswordToken: string,
+    newPassword: string,
+  ): Promise<void> {
     const decoded = handleToken.verifyToken(resetPasswordToken);
 
-    if(typeof decoded === 'string' || decoded.purpose !== 'reset-password') {
+    if (typeof decoded === "string" || decoded.purpose !== "reset-password") {
       throw new AppError(401, "Invalid reset password token");
     }
 
     const bcryptSalt = Number(envConfig.BCRYPT_SALT);
 
-    if(!bcryptSalt || isNaN(bcryptSalt)) {
+    if (!bcryptSalt || isNaN(bcryptSalt)) {
       throw new AppError(500, "Invalid bcrypt salt");
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, bcryptSalt);
 
     const user = await User.findOneAndUpdate(
-      {email: decoded.email},
-      {password: hashedPassword},
-      {new: true}
+      { email: decoded.email },
+      { password: hashedPassword },
+      { new: true },
     );
 
-    if(!user) {
+    if (!user) {
       throw new AppError(404, "User not found");
     }
   }

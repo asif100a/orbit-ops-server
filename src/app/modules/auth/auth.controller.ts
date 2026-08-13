@@ -38,7 +38,7 @@ export class AuthController {
 
       res.status(200).json({
         success: true,
-        message: "User created successfully",
+        message: "User logged in successfully",
         data: user,
       });
     } catch (error) {
@@ -128,9 +128,6 @@ export class AuthController {
   async handleForgotPassword(req: Request, res: Response, next: NextFunction) {
     try {
       const { email } = req.body;
-      if (!email) {
-        throw new AppError(400, "Email is required");
-      }
       const { verifyToken } = await authService.forgotPassword(email);
       res.status(200).json({
         success: true,
@@ -201,9 +198,6 @@ export class AuthController {
       }
 
       const { newPassword } = req.body;
-
-      if(!newPassword)
-        throw new AppError(400, "New password is required");
 
       await authService.resetPassword(resetPasswordToken, newPassword);
 
