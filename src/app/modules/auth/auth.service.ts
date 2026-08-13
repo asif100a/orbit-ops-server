@@ -158,25 +158,37 @@ export class AuthService {
     email: string,
     otp: string,
     otpType: string = 'register'
-  ): Promise<{
-    user: Partial<UserType>;
-    accessToken: string;
-    refreshToken: string;
-  }> {
+  ): Promise<any> {
     const storedOtp = await getOtp(`${otpType}:${email}`);
 
     if (!storedOtp || storedOtp !== otp) {
       throw new AppError(400, "Invalid or expired OTP");
     }
 
+    const user = await User.findOne({email})
+
+    if(!user) {
+      throw new AppError(404, "User not found!");
+    }
+
+    if(otpType === 'forgot-password') {
+      const resetPasswordToken = handleToken.generateVerifyToken({
+        id: user._id.toString(),
+        email: user.email,
+        purpose: "reset-password"
+      });
+
+      return {resetPasswordToken};
+    }
+
     // Mark user as verified
-    const user = await User.findOneAndUpdate(
+    const updateUser = await User.findOneAndUpdate(
       { email },
       { isVerified: true, isActive: true },
       { new: true },
     );
 
-    if (!user) {
+    if (!updateUser) {
       throw new AppError(404, "User not found!");
     }
 
@@ -184,9 +196,9 @@ export class AuthService {
     await deleteOtp(`${otpType}:${email}`);
 
     const payload = {
-      id: user._id.toString(),
-      email: user.email,
-      role: user.role,
+      id: updateUser._id.toString(),
+      email: updateUser.email,
+      role: updateUser.role,
     };
 
     const accessToken = handleToken.generateAccessToken(payload);
@@ -194,7 +206,7 @@ export class AuthService {
 
     refreshTokenStore.add(refreshToken);
 
-    const formattedUser = user.toObject();
+    const formattedUser = updateUser.toObject();
     const { password, ...userWithoutPass } = formattedUser;
 
     return {
@@ -222,8 +234,30 @@ export class AuthService {
     return { verifyToken };
   }
 
-  async resetPassword(email: string, otp: string, newPassword: string): Promise<void> {
-    const storedOtp = await getOtp(``)
+  async resetPassword(resetPasswordToken: string, newPassword: string): Promise<void> {
+    const decoded = handleToken.verifyToken(resetPasswordToken);
+
+    if(typeof decoded === 'string' || decoded.purpose !== 'reset-password') {
+      throw new AppError(401, "Invalid reset password token");
+    }
+
+    const bcryptSalt = Number(envConfig.BCRYPT_SALT);
+
+    if(!bcryptSalt || isNaN(bcryptSalt)) {
+      throw new AppError(500, "Invalid bcrypt salt");
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, bcryptSalt);
+
+    const user = await User.findOneAndUpdate(
+      {email: decoded.email},
+      {password: hashedPassword},
+      {new: true}
+    );
+
+    if(!user) {
+      throw new AppError(404, "User not found");
+    }
   }
 }
 
