@@ -6,7 +6,7 @@ import { handleToken, type TokenPayloadType } from "../../utils/token.utils";
 import type { UserType } from "../user/user.interface";
 import { User } from "../user/user.model";
 import bcrypt from "bcryptjs";
-import crypto from 'crypto';
+import crypto from "crypto";
 
 // Replace with Redis in production
 const refreshTokenStore = new Set<string>();
@@ -86,7 +86,7 @@ export class AuthService {
     if (!user.isActive) throw new AppError(401, "The user is not active");
 
     // 5. If the user doesn't exist
-    if(user.isDeleted) throw new AppError(401, "The user is not exists");
+    if (user.isDeleted) throw new AppError(401, "The user is not exists");
 
     // 4. Generate tokens
     const payload: TokenPayloadType = {
@@ -134,7 +134,6 @@ export class AuthService {
     refreshTokenStore.delete(refreshToken);
   }
 
-
   async verifyOtp(
     email: string,
     otp: string,
@@ -161,7 +160,7 @@ export class AuthService {
         id: user._id.toString(),
         email: user.email,
         purpose: "reset-password",
-        tokenId
+        tokenId,
       });
 
       await deleteOtp(`${otpType}:${email}`);
@@ -204,6 +203,31 @@ export class AuthService {
     };
   }
 
+  async resendOtp(
+    email: string,
+    otpType: "register" | "forgot-password" = "register",
+  ): Promise<{ verifyToken: string }> {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      throw new AppError(404, "User not found");
+    }
+
+    if (otpType === "register" && user.isVerified) {
+      throw new AppError(400, "User is already verified");
+    }
+
+    await this.sendOtp(email, undefined, otpType);
+
+    const verifyToken = handleToken.generateVerifyToken({
+      id: user._id.toString(),
+      email: user.email,
+      purpose: otpType === "register" ? "register-otp" : "forgot-password-otp",
+    });
+
+    return { verifyToken };
+  }
+
   async forgotPassword(email: string): Promise<{ verifyToken: string }> {
     const user = await User.findOne({ email });
 
@@ -228,14 +252,18 @@ export class AuthService {
   ): Promise<void> {
     const decoded = handleToken.verifyToken(resetPasswordToken);
 
-    if (typeof decoded === "string" || decoded.purpose !== "reset-password" || !decoded.tokenId) {
+    if (
+      typeof decoded === "string" ||
+      decoded.purpose !== "reset-password" ||
+      !decoded.tokenId
+    ) {
       throw new AppError(401, "Invalid reset password token");
     }
 
     const storedEmail = await getOtp(`reset-password-token:${decoded.tokenId}`);
 
-    if(!storedEmail || storedEmail !== decoded.email) {
-      throw new AppError(401, "Reset password token expired or already used")
+    if (!storedEmail || storedEmail !== decoded.email) {
+      throw new AppError(401, "Reset password token expired or already used");
     }
 
     const bcryptSalt = Number(envConfig.BCRYPT_SALT);

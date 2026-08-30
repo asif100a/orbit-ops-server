@@ -16,6 +16,8 @@ authRoute.post("/refresh", authController.handleRefresh.bind(authController));
 authRoute.post('/logout', authController.handleLogout.bind(authController));
 // Verify OTP
 authRoute.post('/verify-otp', validateRequest(VerifyOtpSchema), authController.handleVerifyOtp.bind(authController))
+// Resend OTP
+authRoute.post('/resend-otp', authController.handleResendOtp.bind(authController));
 // Forgot Password
 authRoute.post('/forgot-password', validateRequest(ForgotPasswordSchema), authController.handleForgotPassword.bind(authController));
 // Verify Forgot OTP

@@ -125,6 +125,22 @@ export class AuthController {
     }
   }
 
+  async handleResendOtp(req: Request, res: Response, next: NextFunction) {
+    try {
+      const {email, otpType} = req.body;
+
+      const result = await authService.resendOtp(email, otpType);
+
+      res.status(200).json({
+        success: true,
+        message: "OTP resent successfully",
+        data: result,
+      })
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async handleForgotPassword(req: Request, res: Response, next: NextFunction) {
     try {
       const { email } = req.body;
