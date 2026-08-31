@@ -2,7 +2,7 @@ import express, { type Request, type Response } from "express";
 import expressSession from "express-session";
 import { envConfig } from "./app/config/env";
 import cors from "cors";
-import router from "./app/routes";
+import router from "./app/routes/v1";
 import notFound from "./app/middlewares/notFound";
 import { globalErrorHandler } from "./app/middlewares/globalErrorHandler";
 import cookieParser from 'cookie-parser'
