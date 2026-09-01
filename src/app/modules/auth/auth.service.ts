@@ -304,8 +304,8 @@ export class AuthService {
 
     const otpCode = otp || this.generateOtp();
 
-    // Store OTP in Redis with 10 minutes expiry
-    await setOtp(`${otpType}:${email}`, otpCode, 600);
+    // Store OTP in Redis with 3 minutes expiry
+    await setOtp(`${otpType}:${email}`, otpCode, 180);
 
     // Send via email or SMS
     try {
