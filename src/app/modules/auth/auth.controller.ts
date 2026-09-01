@@ -99,7 +99,7 @@ export class AuthController {
       }
       const verifyToken = authHeader.split(" ")[1];
       if (!verifyToken) {
-        throw new AppError(401, "Invalid token");
+        throw new AppError(401, "Invalid verification token");
       }
       const decoded = handleToken.verifyToken(verifyToken);
       if (typeof decoded === "string" || decoded.purpose !== "register-otp") {

@@ -1,4 +1,4 @@
-import jwt, { type SignOptions } from "jsonwebtoken";
+import jwt, { JsonWebTokenError, TokenExpiredError, type SignOptions } from "jsonwebtoken";
 import { envConfig } from "../config/env";
 import AppError from "../errorHandlers/AppError";
 import type { UserRole } from "../types";
@@ -83,7 +83,19 @@ const verifyToken = (token: string) => {
   if (!verifySecret) {
     throw new AppError(400, "JWT verify token not found!");
   }
-  return jwt.verify(token, verifySecret);
+  try {
+    return jwt.verify(token, verifySecret);
+  } catch (error) {
+    if(error instanceof TokenExpiredError) {
+      throw new AppError(401, "OTP verification token expired.")
+    }
+    
+    if(error instanceof JsonWebTokenError) {
+      throw new AppError(401, "Invalid OTP verification token.")
+    }
+
+    throw new AppError(401, "Unable to verify OTP token")
+  }
 };
 
 
