@@ -1,5 +1,37 @@
 # orbit-ops-server
 
+## Deploy to Vercel
+
+This server uses `api/index.ts` as its Vercel serverless entrypoint. Import this repository as a Vercel project with the project root set to this directory. Vercel will use `vercel.json` to route requests to the Express app.
+
+Before deploying, provision MongoDB and Redis services that are reachable from Vercel. MongoDB Atlas and a managed Redis provider are suitable; the Docker Compose services are for local development only.
+
+Add these environment variables in Vercel for the Production, Preview, and Development environments as needed:
+
+```text
+NODE_ENV=production
+DB_URL=
+REDIS_URL=
+FRONTEND_URL=https://your-frontend.example.com
+PORT=8080
+JWT_ACCESS_SECRET=
+JWT_ACCESS_EXPIRES_IN=
+JWT_REFRESH_SECRET=
+JWT_REFRESH_EXPIRES_IN=
+JWT_VERIFY_SECRET=
+JWT_VERIFY_EXPIRES_IN=
+BCRYPT_SALT=
+EXPRESS_SESSION_SECRET=
+SMTP_HOST=
+SMTP_PORT=
+SMTP_SECURE=
+SMTP_USER=
+SMTP_PASS=
+SMTP_FROM=
+```
+
+After deployment, the health response is available at `/`, and API routes remain under `/api/v1` (for example, `/api/v1/auth/login`). Configure the frontend to use the deployed server URL and ensure its origin matches `FRONTEND_URL`; credentialed cookies require HTTPS in production.
+
 To install dependencies:
 
 ```bash
