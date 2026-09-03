@@ -225,6 +225,21 @@ export class AuthController {
       next(error)
     }
   }
+
+  async handleCheckAuthentication(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+    const email = req.body?.email;
+    if(!email) throw new AppError(401, 'Email not found')
+    await authService.checkAuthentication(email);
+
+    res.status(200).json({
+      success: true,
+      message: 'User is authenticated'
+    })
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const authController = new AuthController();

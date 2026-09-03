@@ -287,6 +287,24 @@ export class AuthService {
     await deleteOtp(`reset-password-token:${decoded.tokenId}`);
   }
 
+  async checkAuthentication(email: string) {
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw new AppError(401, "User not found");
+    }
+
+    // 3. If verify the user is verified
+    if (!user.isVerified) throw new AppError(401, "The user is not verified");
+
+    // 4. If the user is not active
+    if (!user.isActive) throw new AppError(401, "The user is not active");
+
+    // 5. If the user doesn't exist
+    if (user.isDeleted) throw new AppError(401, "The user is not exists");
+
+    return true;
+  }
+
   // ----------------Utils Functions----------------
   private generateOtp(): string {
     return Math.floor(100000 + Math.random() * 900000).toString(); // 6 digit otp

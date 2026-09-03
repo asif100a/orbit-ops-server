@@ -3,6 +3,7 @@ import { authController } from "./auth.controller";
 import { validateRequest } from "../../middlewares/validateRequest";
 import { UserSchema } from "../user/user.validation";
 import { ForgotPasswordSchema, LoginSchema, ResetPasswordSchema, VerifyOtpSchema } from "./auth.validation";
+import { checkAuth } from "../../middlewares/checkAuth";
 
 const authRoute = Router();
 
@@ -24,5 +25,7 @@ authRoute.post('/forgot-password', validateRequest(ForgotPasswordSchema), authCo
 authRoute.post('/verify-forgot-password-otp', validateRequest(VerifyOtpSchema), authController.handleVerifyForgotPasswordOtp.bind(authController))
 // Reset Password
 authRoute.post('/reset-password', validateRequest(ResetPasswordSchema), authController.handleResetPassword.bind(authController));
+// Check Authentication
+authRoute.post('/check-auth', checkAuth(), authController.handleCheckAuthentication.bind(authController));
 
 export default authRoute;
