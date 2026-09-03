@@ -26,6 +26,6 @@ authRoute.post('/verify-forgot-password-otp', validateRequest(VerifyOtpSchema), 
 // Reset Password
 authRoute.post('/reset-password', validateRequest(ResetPasswordSchema), authController.handleResetPassword.bind(authController));
 // Check Authentication
-authRoute.post('/check-auth', checkAuth(), authController.handleCheckAuthentication.bind(authController));
+authRoute.get('/check-auth', checkAuth(), authController.handleCheckAuthentication.bind(authController));
 
 export default authRoute;
