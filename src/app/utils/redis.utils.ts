@@ -3,6 +3,7 @@ import { envConfig } from "../config/env";
 import AppError from "../errorHandlers/AppError";
 
 let redisClient: RedisClientType | null = null;
+const REFRESH_TOKEN_PREFIX = 'refresh-token';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -58,4 +59,24 @@ export const deleteOtp = async(email: string): Promise<void> => {
     const client = getRedisClient()
     const key = `otp:${email}`
     await client.del(key)
+}
+
+// Refresh token store
+export async function storeRefreshToken(refreshToken:string, userId: string, expiresInSeconds: number): Promise<void> {
+  const client = getRedisClient();
+  await client.set(
+    `${REFRESH_TOKEN_PREFIX}:${refreshToken}`, 
+    userId,
+    {EX: expiresInSeconds}
+  )
+}
+
+export async function hasRefreshToken(refreshToken:string): Promise<boolean> {
+  const result = await redisClient?.exists(`${REFRESH_TOKEN_PREFIX}:${refreshToken}`)
+
+  return result === 1;
+}
+
+export async function deleteRefreshToken(refreshToken:string): Promise<void> {
+  await redisClient?.del(`${REFRESH_TOKEN_PREFIX}:${refreshToken}`);
 }

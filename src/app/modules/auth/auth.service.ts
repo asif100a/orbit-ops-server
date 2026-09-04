@@ -1,15 +1,21 @@
 import { envConfig } from "../../config/env";
 import AppError from "../../errorHandlers/AppError";
 import { sendOtpEmail } from "../../utils/message.utils";
-import { deleteOtp, getOtp, setOtp } from "../../utils/redis.utils";
+import {
+  deleteOtp,
+  deleteRefreshToken,
+  getOtp,
+  hasRefreshToken,
+  setOtp,
+  storeRefreshToken,
+} from "../../utils/redis.utils";
 import { handleToken, type TokenPayloadType } from "../../utils/token.utils";
 import type { UserType } from "../user/user.interface";
 import { User } from "../user/user.model";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 
-// Replace with Redis in production
-const refreshTokenStore = new Set<string>();
+const refreshTokenExpiresInSeconds = 7 * 24 * 60 * 60;
 
 interface AuthTokens {
   accessToken: string;
@@ -98,7 +104,12 @@ export class AuthService {
     const accessToken = handleToken.generateAccessToken(payload);
     const refreshToken = handleToken.generateRefreshToken(payload);
 
-    refreshTokenStore.add(refreshToken);
+    // refreshTokenStore.add(refreshToken);
+    await storeRefreshToken(
+      refreshToken,
+      user._id.toString(),
+      refreshTokenExpiresInSeconds,
+    );
 
     const { password, ...withOutPassword } = user.toObject();
 
@@ -106,7 +117,7 @@ export class AuthService {
   }
 
   async refresh(refreshToken: string): Promise<AuthTokens> {
-    if (!refreshToken || !refreshTokenStore.has(refreshToken)) {
+    if (!refreshToken || !(await hasRefreshToken(refreshToken))) {
       throw new AppError(403, "Refresh token invalid or not found");
     }
 
@@ -124,14 +135,18 @@ export class AuthService {
     const newRefreshToken = handleToken.generateRefreshToken(payload);
 
     // Rotate refresh token
-    refreshTokenStore.delete(refreshToken);
-    refreshTokenStore.add(newRefreshToken);
+    await deleteRefreshToken(refreshToken);
+    await storeRefreshToken(
+      newRefreshToken,
+      decoded.id,
+      refreshTokenExpiresInSeconds,
+    );
 
     return { accessToken: newAccessToken, refreshToken: newRefreshToken };
   }
 
   async logout(refreshToken: string): Promise<void> {
-    refreshTokenStore.delete(refreshToken);
+    await deleteRefreshToken(refreshToken);
   }
 
   async verifyOtp(
@@ -191,7 +206,11 @@ export class AuthService {
     const accessToken = handleToken.generateAccessToken(payload);
     const refreshToken = handleToken.generateRefreshToken(payload);
 
-    refreshTokenStore.add(refreshToken);
+    await storeRefreshToken(
+      refreshToken,
+      updateUser._id.toString(),
+      refreshTokenExpiresInSeconds,
+    );
 
     const formattedUser = updateUser.toObject();
     const { password, ...userWithoutPass } = formattedUser;

@@ -53,6 +53,7 @@ export class AuthController {
   ): Promise<void> {
     try {
       const { refreshToken } = req.cookies;
+      console.log('Request cookie: ', req.cookies);
       const { accessToken, refreshToken: newRefreshToken } =
         await authService.refresh(refreshToken);
 
