@@ -325,7 +325,7 @@ export class AuthService {
   }
 
   // ----------------Utils Functions----------------
-  private generateOtp(): string {
+  public generateOtp(): string {
     return Math.floor(100000 + Math.random() * 900000).toString(); // 6 digit otp
   }
 

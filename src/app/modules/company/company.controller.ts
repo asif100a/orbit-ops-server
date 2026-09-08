@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { CompanyService } from "./company.service";
 import { catchAsync } from "../../utils/index";
 import type { CompanyResponseType } from "./company.interface";
+import AppError from "../../errorHandlers/AppError";
 
 const companyService = new CompanyService();
 
@@ -46,11 +47,17 @@ export class CompanyController {
   async create(req: Request, res: Response): Promise<void> {
     try {
       console.log("Company Req log: ", req.body);
-      const data = await companyService.create(req.body);
+      const userId = req.user?.id;
+      if(!userId) {
+        throw new AppError(401, "Authenticated user not found");
+      }
+
+      const company = await companyService.create(userId, req.body);
+      
       res.status(201).json({
         success: true,
         message: "The company data created successfully",
-        data,
+        data: company
       });
     } catch (error: any) {
       catchAsync(res, error);

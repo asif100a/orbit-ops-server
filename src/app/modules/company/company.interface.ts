@@ -24,6 +24,7 @@ export interface CompanyType {
   plan: SchemaDefinitionProperty<SubscriptionPlans>;
   isActive: boolean;
   isVerified: boolean;
+  verifiedAt: Date | null
   onboardingCompleted: boolean;
   settings?: {
     workingDays?: string[];
@@ -37,5 +38,10 @@ export interface CompanyType {
 export interface CompanyResponseType {
   success: boolean;
   data?: CompanyType | CompanyType[];
+  meta?: {
+    total?: number;
+    page?: number;
+    limit?: number;
+  }
   message: string;
 }

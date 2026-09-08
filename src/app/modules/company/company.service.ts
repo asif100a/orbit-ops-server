@@ -1,3 +1,6 @@
+import AppError from "../../errorHandlers/AppError";
+import { setOtp } from "../../utils/redis.utils";
+import { AuthService } from "../auth/auth.service";
 import { type CompanyType } from "./company.interface";
 import { CompanyModel } from "./company.model";
 
@@ -7,21 +10,73 @@ export class CompanyService {
   }
 
   async findById(id: string): Promise<CompanyType | null> {
-    return CompanyModel.findById(id);
+    return CompanyModel.findById(id)
+      .populate("owner", "name email role")
+      .populate("admins", "name email role");
   }
 
-  async create(data: Partial<CompanyType>): Promise<CompanyType> {
-    return CompanyModel.create(data);
+  async create(
+    ownerId: string,
+    data: Partial<CompanyType>,
+  ): Promise<CompanyType> {
+    const existingCompany = await CompanyModel.findOne({
+      owner: ownerId,
+    });
+    if (existingCompany) {
+      throw new AppError(409, "This user already owns a company");
+    }
+
+    const slug =
+      data?.slug ??
+      data?.name
+        ?.toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+
+    const existingSlug = await CompanyModel.findOne({ slug });
+    if (existingSlug) {
+      throw new AppError(409, "This company slug is already in use");
+    }
+
+    const company = await CompanyModel.create({
+      ...data,
+      slug,
+      owner: ownerId,
+      admins: [ownerId],
+      plan: "free",
+      isActive: true,
+      isVerified: false,
+      onboardingCompleted: false,
+    });
+
+    const authService = new AuthService()
+
+    const otp = authService.generateOtp();
+
+    await setOtp(`company-verification:${company._id}`, otp, 600);
+
+    return company;
   }
 
   async update(
     id: string,
     data: Partial<CompanyType>,
   ): Promise<CompanyType | null> {
-    return CompanyModel.findByIdAndUpdate(id, data, { new: true });
+    return CompanyModel.findByIdAndUpdate(
+      id,
+      { $set: data },
+      { new: true, runValidators: true },
+    );
   }
 
-  async delete(id: string): Promise<void> {
-    await CompanyModel.findByIdAndDelete(id);
+  async delete(id: string): Promise<any> {
+    const company = await CompanyModel.findByIdAndDelete(id, {isActive: false});
+
+    if(!company) {
+      throw new AppError(404, "Company not found")
+    }
+
+    return company;
   }
 }

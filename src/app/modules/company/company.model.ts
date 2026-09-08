@@ -40,6 +40,7 @@ const CompanySchema: Schema = new Schema<CompanyDocumentType>(
     plan: { type: String, enum: SUBSCRIPTION_PLANS, default: "free" },
     isActive: { type: Boolean, default: true },
     isVerified: { type: Boolean, default: false },
+    verifiedAt: {type: Date, default: null},
     onboardingCompleted: { type: Boolean, default: false },
     settings: {
       workingDays: [String],

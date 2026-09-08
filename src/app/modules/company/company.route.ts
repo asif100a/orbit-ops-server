@@ -9,6 +9,7 @@ const companyController = new CompanyController();
 companyRoute.get("/", companyController.getAll.bind(companyController));
 companyRoute.get("/:id", companyController.getById.bind(companyController));
 companyRoute.post("/", validateRequest(CompanySchema), companyController.create.bind(companyController));
+companyRoute.post('/:companyId/verify', )
 companyRoute.put("/:id", validateRequest(CompanySchema), companyController.update.bind(companyController));
 companyRoute.delete("/:id", companyController.delete.bind(companyController));
 
