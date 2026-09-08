@@ -1,5 +1,5 @@
 import AppError from "../../errorHandlers/AppError";
-import { setOtp } from "../../utils/redis.utils";
+import { deleteOtp, getOtp, setOtp } from "../../utils/redis.utils";
 import { AuthService } from "../auth/auth.service";
 import { type CompanyType } from "./company.interface";
 import { CompanyModel } from "./company.model";
@@ -57,6 +57,32 @@ export class CompanyService {
     await setOtp(`company-verification:${company._id}`, otp, 600);
 
     return company;
+  }
+
+  async verifyCompany(companyId: string, otp: string) {
+    const  company = await CompanyModel.findById(companyId);
+    if(!company) {
+      throw new AppError(404, "Company not found");
+    }
+
+    if(company.isVerified) {
+      throw new AppError(400, "Company is already verified");
+    }
+
+    const storedOtp = await getOtp(`company-verification:${companyId}`)
+
+    if(!storedOtp || storedOtp !== otp) {
+      throw new AppError(400, "Invalid or expired token")
+    }
+
+    const verifiedCompany = await CompanyModel.findByIdAndUpdate(companyId, {isVerified: true, verifiedAt: new Date()}, {
+      new: true,
+      runValidators: true
+    })
+
+    await deleteOtp(`company-verification:${companyId}`)
+
+    return verifiedCompany;
   }
 
   async update(

@@ -53,7 +53,7 @@ export class CompanyController {
       }
 
       const company = await companyService.create(userId, req.body);
-      
+
       res.status(201).json({
         success: true,
         message: "The company data created successfully",
@@ -61,6 +61,23 @@ export class CompanyController {
       });
     } catch (error: any) {
       catchAsync(res, error);
+    }
+  }
+
+  async verify (req: Request,, res: Response, next: NewableFunction) {
+    try {
+      const company = await companyService.verifyCompany(
+        req.params.id,
+        req.body.otp
+      );
+
+      res.status(200).json({
+        success: true,
+        message: "Company verified successfully",
+        data: company
+      })
+    } catch (error) {
+      
     }
   }
 
