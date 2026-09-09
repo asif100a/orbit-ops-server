@@ -13,7 +13,7 @@ companyRoute.get("/:id", companyController.getById.bind(companyController));
 // Create Company
 companyRoute.post("/", validateRequest(CompanySchema), companyController.create.bind(companyController));
 // Verify Company
-companyRoute.post('/:companyId/verify', companyController.verify.bind(companyController));
+companyRoute.post('/verify', companyController.verify.bind(companyController));
 // Update Company
 companyRoute.put("/:id", validateRequest(CompanySchema), companyController.update.bind(companyController));
 // Delete Company
