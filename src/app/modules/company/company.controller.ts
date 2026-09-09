@@ -48,7 +48,7 @@ export class CompanyController {
     try {
       console.log("Company Req log: ", req.body);
       const userId = req.user?.id;
-      if(!userId) {
+      if (!userId) {
         throw new AppError(401, "Authenticated user not found");
       }
 
@@ -57,27 +57,31 @@ export class CompanyController {
       res.status(201).json({
         success: true,
         message: "The company data created successfully",
-        data: company
+        data: company,
       });
     } catch (error: any) {
       catchAsync(res, error);
     }
   }
 
-  async verify (req: Request,, res: Response, next: NewableFunction) {
+  async verify(req: Request, res: Response) {
+    const body = req.body;
     try {
-      const company = await companyService.verifyCompany(
-        req.params.id,
-        req.body.otp
-      );
+      if (!body.id) {
+        throw new AppError(400, "Id not found");
+      }
+      if (!body.otp) {
+        throw new AppError(400, "OTP not found");
+      }
+      const company = await companyService.verify(body.id, body.otp);
 
       res.status(200).json({
         success: true,
         message: "Company verified successfully",
-        data: company
-      })
+        data: company,
+      });
     } catch (error) {
-      
+      catchAsync(res, error)
     }
   }
 

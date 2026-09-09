@@ -59,7 +59,7 @@ export class CompanyService {
     return company;
   }
 
-  async verifyCompany(companyId: string, otp: string) {
+  async verify(companyId: string, otp: string) {
     const  company = await CompanyModel.findById(companyId);
     if(!company) {
       throw new AppError(404, "Company not found");
