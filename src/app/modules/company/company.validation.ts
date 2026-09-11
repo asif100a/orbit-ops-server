@@ -46,10 +46,7 @@ export const CompanySchema = z.object({
 
 export type Company = z.infer<typeof CompanySchema>;
 
-export const UpdateCompanySchema = CompanySchema.partial().omit({ email: true }).extend({
-  id: objectIdSchema,
-});
-
+export const UpdateCompanySchema = CompanySchema.partial().omit({ email: true });
 export const VerifyCompanySchema = z.object({
   otp: z.string()
   .length(6, "OTP must be 6 character")

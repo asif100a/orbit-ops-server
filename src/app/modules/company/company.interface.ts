@@ -1,9 +1,13 @@
 import type { SchemaDefinitionProperty, Types } from "mongoose";
-import type { CompanyIndustry, CompanySize, SubscriptionPlans } from "../../../../data";
+import type {
+  CompanyIndustry,
+  CompanySize,
+  SubscriptionPlans,
+} from "../../../../data";
 
 export interface CompanyType {
   name: string;
-  slug: string
+  slug: string;
   registrationNumber?: string;
   industryType: CompanyIndustry;
   size: CompanySize;
@@ -17,14 +21,15 @@ export interface CompanyType {
     state?: string;
     country?: string;
     postalCode?: string;
-  }
+  };
   timezone?: string;
   owner: Types.ObjectId;
   admins?: Types.ObjectId[];
   plan: SchemaDefinitionProperty<SubscriptionPlans>;
   isActive: boolean;
   isVerified: boolean;
-  verifiedAt: Date | null
+  verifiedAt: Date | null;
+  isDeleted: boolean;
   onboardingCompleted: boolean;
   settings?: {
     workingDays?: string[];
@@ -32,7 +37,7 @@ export interface CompanyType {
     workingHoursEnd?: string;
     defaultCurrency?: string;
     allowSelfRegistration?: boolean;
-  }
+  };
 }
 
 export interface CompanyResponseType {
@@ -42,6 +47,6 @@ export interface CompanyResponseType {
     total?: number;
     page?: number;
     limit?: number;
-  }
+  };
   message: string;
 }

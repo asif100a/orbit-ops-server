@@ -107,15 +107,25 @@ export class CompanyService {
       throw new AppError(400, "Company email cannot be changed");
     }
 
-    return CompanyModel.findByIdAndUpdate(
-      id,
+    const company = await CompanyModel.findOneAndUpdate(
+      { _id: id, isActive: true },
       { $set: data },
       { new: true, runValidators: true },
     );
+
+    if (!company) {
+      throw new AppError(404, "Active company not found");
+    }
+
+    return company;
   }
 
   async delete(id: string): Promise<any> {
-    const company = await CompanyModel.findByIdAndDelete(id, {isActive: false});
+    const company = await CompanyModel.findOneAndUpdate(
+      { _id: id, isActive: true },
+      { $set: { isActive: false, isDeleted: true } },
+      { new: true, runValidators: true },
+    );
 
     if(!company) {
       throw new AppError(404, "Company not found")

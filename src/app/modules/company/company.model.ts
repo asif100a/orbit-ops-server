@@ -41,6 +41,7 @@ const CompanySchema: Schema = new Schema<CompanyDocumentType>(
     isActive: { type: Boolean, default: true },
     isVerified: { type: Boolean, default: false },
     verifiedAt: {type: Date, default: null},
+    isDeleted: {type: Boolean, default: false},
     onboardingCompleted: { type: Boolean, default: false },
     settings: {
       workingDays: [String],
