@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { CompanyController } from "./company.controller";
 import { validateRequest } from "../../middlewares/validateRequest";
-import { CompanySchema } from "./company.validation";
+import { CompanySchema, UpdateCompanySchema } from "./company.validation";
 import { checkAuth } from "../../middlewares/checkAuth";
 
 const companyRoute = Router();
@@ -26,7 +26,7 @@ companyRoute.post(
 companyRoute.put(
   "/:id",
   checkAuth(),
-  validateRequest(CompanySchema),
+  validateRequest(UpdateCompanySchema),
   companyController.update.bind(companyController),
 );
 

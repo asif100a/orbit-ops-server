@@ -103,6 +103,10 @@ export class CompanyService {
     id: string,
     data: Partial<CompanyType>,
   ): Promise<CompanyType | null> {
+    if (data.email !== undefined) {
+      throw new AppError(400, "Company email cannot be changed");
+    }
+
     return CompanyModel.findByIdAndUpdate(
       id,
       { $set: data },
