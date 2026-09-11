@@ -33,21 +33,15 @@ export const CompanySchema = z.object({
     })
     .optional(),
   timezone: z.string().default('UTC'),
-  // owner: objectIdSchema,
-  // admins: z.array(objectIdSchema).optional(),
-  // plan: z.enum([...SUBSCRIPTION_PLANS]),
-  // isActive: z.boolean(),
-  // isVerified: z.boolean(),
-  // onboardingCompleted: z.boolean(),
-  // settings: z
-  //   .object({
-  //     workingDays: z.array(z.string()).optional(),
-  //     workingHoursStart: z.string().optional(),
-  //     workingHoursEnd: z.string().optional(),
-  //     defaultCurrency: z.string().optional(),
-  //     allowSelfRegistration: z.boolean().optional(),
-  //   })
-  //   .optional(),
+  settings: z
+    .object({
+      workingDays: z.array(z.string()).optional(),
+      workingHoursStart: z.string().optional(),
+      workingHoursEnd: z.string().optional(),
+      defaultCurrency: z.string().optional(),
+      allowSelfRegistration: z.boolean().optional(),
+    })
+    .optional()
 });
 
 export type Company = z.infer<typeof CompanySchema>;

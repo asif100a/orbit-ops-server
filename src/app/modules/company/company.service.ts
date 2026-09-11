@@ -1,6 +1,7 @@
 import AppError from "../../errorHandlers/AppError";
 import { deleteOtp, getOtp, setOtp } from "../../utils/redis.utils";
 import { AuthService } from "../auth/auth.service";
+import { User } from "../user/user.model";
 import { type CompanyType } from "./company.interface";
 import { CompanyModel } from "./company.model";
 
@@ -19,6 +20,11 @@ export class CompanyService {
     ownerId: string,
     data: Partial<CompanyType>,
   ): Promise<CompanyType> {
+    const ownerExists = await User.exists({ _id: ownerId });
+    if (!ownerExists) {
+      throw new AppError(404, "Owner user not found");
+    }
+
     const existingCompany = await CompanyModel.findOne({
       owner: ownerId,
     });
@@ -44,7 +50,7 @@ export class CompanyService {
       slug,
       owner: ownerId,
       admins: [ownerId],
-      plan: "free",
+      plan: "FREE",
       isActive: true,
       isVerified: false,
       onboardingCompleted: false,
