@@ -78,7 +78,7 @@ export class CompanyService {
     const storedOtp = await getOtp(`company-verification:${companyId}`)
 
     if(!storedOtp || storedOtp !== otp) {
-      throw new AppError(400, "Invalid or expired token")
+      throw new AppError(400, "Invalid or expired OTP")
     }
 
     const verifiedCompany = await CompanyModel.findByIdAndUpdate(companyId, {isVerified: true, verifiedAt: new Date()}, {
