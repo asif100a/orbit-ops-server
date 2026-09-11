@@ -1,6 +1,6 @@
 import AppError from "../../errorHandlers/AppError";
+import { sendOtpEmail } from "../../utils/message.utils";
 import { deleteOtp, getOtp, setOtp } from "../../utils/redis.utils";
-import { AuthService } from "../auth/auth.service";
 import { User } from "../user/user.model";
 import { type CompanyType } from "./company.interface";
 import { CompanyModel } from "./company.model";
@@ -56,11 +56,19 @@ export class CompanyService {
       onboardingCompleted: false,
     });
 
-    const authService = new AuthService()
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpKey = `company-verification:${company._id}`;
 
-    const otp = authService.generateOtp();
-
-    await setOtp(`company-verification:${company._id}`, otp, 600);
+    try {
+      await setOtp(otpKey, otp, 600);
+      await sendOtpEmail({
+        to: company.email,
+        otp,
+      });
+    } catch (error) {
+      await deleteOtp(otpKey);
+      throw new AppError(502, "Failed to send company verification OTP");
+    }
 
     return company;
   }
