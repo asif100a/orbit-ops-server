@@ -66,14 +66,15 @@ export class CompanyController {
 
   async verify(req: Request, res: Response) {
     const body = req.body;
+    console.log('verify-company body: ', body)
     try {
-      if (!body.id) {
+      if (!body.companyId) {
         throw new AppError(400, "Id not found");
       }
       if (!body.otp) {
         throw new AppError(400, "OTP not found");
       }
-      const company = await companyService.verify(body.id, body.otp);
+      const company = await companyService.verify(body.companyId, body.otp);
 
       res.status(200).json({
         success: true,
