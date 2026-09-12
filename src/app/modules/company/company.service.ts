@@ -1,6 +1,7 @@
 import AppError from "../../errorHandlers/AppError";
 import { sendOtpEmail } from "../../utils/message.utils";
 import { deleteOtp, getOtp, setOtp } from "../../utils/redis.utils";
+import { Types } from "mongoose";
 import { User } from "../user/user.model";
 import { type CompanyType } from "./company.interface";
 import { CompanyModel } from "./company.model";
@@ -14,6 +15,18 @@ export class CompanyService {
     return CompanyModel.findById(id)
       .populate("owner", "name email role")
       .populate("admins", "name email role");
+  }
+
+  async myCompany(id: string): Promise<CompanyType | null> {
+    const response = await CompanyModel.findOne({
+      admins: { $in: [new Types.ObjectId(id)] },
+    });
+
+    if(!response) {
+      throw new AppError(404, "Company not found!");
+    }
+
+    return response;
   }
 
   async create(
@@ -97,6 +110,15 @@ export class CompanyService {
     await deleteOtp(`company-verification:${companyId}`)
 
     return verifiedCompany;
+  }
+
+  async subscribe(companyId: string, plan: string): Promise<CompanyType | null> {
+    const company = await CompanyModel.findById(companyId);
+    if (!company) {
+      throw new AppError(404, "Company not found");
+    }
+    // Implementation for subscription logic
+    return company;
   }
 
   async update(

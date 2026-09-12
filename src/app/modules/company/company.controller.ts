@@ -44,6 +44,26 @@ export class CompanyController {
     }
   }
 
+  async getMyCompany(req: Request, res: Response): Promise<void> {
+    try {
+      console.log("Company Req log: ", req.user);
+      const userId = req.user?.id;
+      if (!userId) {
+        throw new AppError(401, "Authenticated user not found");
+      }
+
+      const data = await companyService.myCompany(userId);
+
+      res.status(200).json({
+        success: true,
+        message: "The company data retrieved successfully",
+        data,
+      });
+    } catch (error: any) {
+      catchAsync(res, error);
+    }
+  }
+
   async create(req: Request, res: Response): Promise<void> {
     try {
       console.log("Company Req log: ", req.body);

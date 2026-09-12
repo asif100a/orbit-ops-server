@@ -9,6 +9,12 @@ const companyController = new CompanyController();
 
 companyRoute.get("/", companyController.getAll.bind(companyController));
 
+companyRoute.get(
+  "/my-company",
+  checkAuth(),
+  companyController.getMyCompany.bind(companyController),
+);
+
 companyRoute.get("/:id", companyController.getById.bind(companyController));
 
 companyRoute.post(
