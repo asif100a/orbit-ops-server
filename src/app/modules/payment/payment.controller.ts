@@ -5,90 +5,43 @@ import type {
   PaymentResponseType,
   SubscriptionPlanType,
 } from "./payment.interface";
-import stripe from "../../config/stripe";
-import { envConfig } from "../../config/env";
-import { PaymentModel } from "./payment.model";
-import type Stripe from "stripe";
+import AppError from "../../errorHandlers/AppError";
 
 const paymentService = new PaymentService();
 
-interface CheckoutItem {
-  name: string;
-  subscriptionType: SubscriptionPlanType;
-  amount: number;
-}
-
 export class PaymentController {
-  async createCheckoutSessionService(
-    userId: string,
-    data: CheckoutItem,
-  ): Promise<{ url: string | null }> {
-    const subscription_data = {
-      currency: "usd",
-      subscriptionType: data.subscriptionType,
-      amount: data.amount,
-    };
+  async createCheckoutSession (req: Request, res: Response) {
+    try {
+        const {data} = req.body;
 
-    const session = await stripe.checkout.sessions.create({
-      subscription_data,
-      mode: "payment",
-      success_url: `${envConfig.CLIENT_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${envConfig.CLIENT_URL}/checkout/cancel`,
-      metadata: { userId },
-    });
+        if(!data) {
+            throw new AppError(400, 'Payment data not found')
+        }
 
-    await PaymentModel.create({
-      userId,
-      stripeCheckoutSessionId: session.id,
-      amount: data.amount,
-      currency: "usd",
-      status: "pending",
-    });
+        const userId = req.user.id;
+        const result = await paymentService.createCheckoutSessionService(userId, data);
 
-    return { url: session.url };
+        res.status(200).json({
+            success: true,
+            message: "Checkout created successfully",
+            data: result
+        })
+    } catch (error) {
+        catchAsync(res, error)
+    }
   }
 
-  async getCheckoutSessionStatusService(sessionId: string): Promise<{
-    status: string | null;
-    payment_status: string;
-  }> {
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
+  async getCheckoutSessionStatus(req: Request, res: Response) {
+    try {
+        const {session_id} = req.query;
+        const result = await paymentService.getCheckoutSessionStatusService(session_id as string);
 
-    return {
-      status: session.status,
-      payment_status: session.payment_status,
-    };
-  }
-
-  async handleCheckoutSessionCompleted(
-    session: Stripe.Checkout.Session,
-  ): Promise<void> {
-    await PaymentModel.findOneAndUpdate(
-      {
-        stripeCheckoutSessionId: session.id,
-      },
-      {
-        status: "succeeded",
-        stripePaymentIntentId: session.payment_intent as string,
-      },
-    );
-  }
-
-  async handleCheckoutSessionExpired(session: Stripe.Checkout.Session) {
-    await PaymentModel.findOneAndUpdate(
-      {
-        stripeCheckoutSessionId: session.id,
-      },
-      { status: "failed" },
-    );
-  }
-
-  async handlePaymentIntentFailed(intent: Stripe.PaymentIntent) {
-    await PaymentModel.findOneAndUpdate(
-      {
-        stripePaymentIntentId: intent.id,
-      },
-      { status: "failed" },
-    );
+        res.status(200).json({
+            success: true,
+            message: "Checkout session status fetched successfully"
+        })
+    } catch (error) {
+        catchAsync(res, error);
+    }
   }
 }

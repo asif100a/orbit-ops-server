@@ -6,6 +6,7 @@ import router from "./app/routes/v1";
 import notFound from "./app/middlewares/notFound";
 import { globalErrorHandler } from "./app/middlewares/globalErrorHandler";
 import cookieParser from 'cookie-parser'
+import webhookRouter from "./app/modules/webhook/webhook.route";
 
 const app = express();
 
@@ -15,6 +16,9 @@ app.use(cors({
   origin: envConfig.FRONTEND_URL || "http://localhost:3000",
 }));
 app.use(cookieParser())
+
+// Before the express.json()
+app.use('/api/v1/webhooks', webhookRouter);
 
 // Body parser
 app.use(express.json({ limit: "10mb" }));

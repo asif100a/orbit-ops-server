@@ -1,15 +1,15 @@
 
     import {Router} from 'express';
     import { PaymentController } from './payment.controller';
+import { checkAuth } from '../../middlewares/checkAuth';
 
     const paymentRoute = Router();
     const paymentController = new PaymentController();
 
-    paymentRoute.get('/', paymentController.getAll.bind(paymentController));
-    paymentRoute.get('/:id', paymentController.getById.bind(paymentController));
-    paymentRoute.post('/', paymentController.create.bind(paymentController));
-    paymentRoute.put('/:id', paymentController.update.bind(paymentController));
-    paymentRoute.delete('/:id', paymentController.delete.bind(paymentController));
+    // POST Payment
+    paymentRoute.post('/create-checkout-session', paymentController.createCheckoutSession.bind(paymentController));
+    // GET Session Status
+    paymentRoute.get('/session-status', checkAuth(), paymentController.getCheckoutSessionStatus.bind(paymentController));
 
     export default paymentRoute;
     
