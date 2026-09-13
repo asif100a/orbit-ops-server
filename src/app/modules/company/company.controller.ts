@@ -66,7 +66,7 @@ export class CompanyController {
 
   async create(req: Request, res: Response): Promise<void> {
     try {
-      console.log("Company Req log: ", req.body);
+      // console.log("Company Req log: ", req.body);
       const userId = req.user?.id;
       if (!userId) {
         throw new AppError(401, "Authenticated user not found");
@@ -86,7 +86,7 @@ export class CompanyController {
 
   async verify(req: Request, res: Response) {
     const body = req.body;
-    console.log('verify-company body: ', body)
+    // console.log('verify-company body: ', body)
     try {
       if (!body.companyId) {
         throw new AppError(400, "Id not found");
