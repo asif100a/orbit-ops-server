@@ -1,93 +1,66 @@
+import type { Request, Response } from "express";
+import { PaymentService } from "./payment.service";
+import { catchAsync } from "../../utils/index";
+import type {
+  PaymentResponseType,
+  SubscriptionPlanType,
+} from "./payment.interface";
+import stripe from "../../config/stripe";
+import { envConfig } from "../../config/env";
+import { PaymentModel } from "./payment.model";
 
-    import type {Request, Response} from 'express'
-    import {PaymentService} from './payment.service';
-    import { catchAsync } from '../../utils/index'
-    import type { PaymentResponseType } from './payment.interface'
-    
-    const paymentService = new PaymentService();
-    
-    export class PaymentController {
-        async getAll(req: Request, res: Response): Promise<void> {
-            try{
-                const data = await paymentService.findAll();
-                res.status(200).json({
-                success: true,
-                message: "The payment data retrieved successfully",
-                data
-            })
-            } catch(error: any) {
-                catchAsync(res, error)
-            }
-        }
+const paymentService = new PaymentService();
 
-        async getById(req: Request, res: Response): Promise<void> {
-            const paramsId = req.params.id
-            if(!paramsId) {
-              throw new Error('Id not found!')
-            }
-            try{
-                const data = await paymentService.findById(paramsId as string);
-                if(!data) {
-                    res.status(404).json({
-                        success: false,
-                        message: "Payment not found"
-                        })
-                    return;
-                }
-                res.status(200).json({
-                success: true,
-                message: "The payment data retrieved successfully",
-                data
-            })
-            } catch(error: any) {
-               catchAsync(res, error)
-            }
-        }
+interface CheckoutItem {
+  name: string;
+  subscriptionType: SubscriptionPlanType;
+  amount: number;
+}
 
-        async create(req: Request, res: Response): Promise<void> {
-            try{
-                const data = await paymentService.create(req.body);
-                res.status(201).json({
-                    success: true,
-                    message: "The payment data created successfully",
-                    data
-                })
-            }catch(error: any) {
-                catchAsync(res, error)
-            }
-        }
+export class PaymentController {
+  async createCheckoutSessionService(
+    userId: string,
+    data: CheckoutItem,
+  ): Promise<{ url: string | null }> {
+    const subscription_data = {
+        currency: "usd",
+        subscriptionType: data.subscriptionType,
+        amount: data.amount,      
+    };
 
-        async update(req: Request, res: Response): Promise<void> {
-            const paramsId = req.params.id
-            if(!paramsId) {
-              throw new Error('Id not found!')
-            }
-            try {
-                const data = await paymentService.update(paramsId as string, req.body);
-                res.status(200).json({
-                    success: true,
-                    message: "The payment data updated successfully",
-                    data
-                })
-            } catch (error: any) {
-                catchAsync(res, error)
-            }
-        }
+    const session = await stripe.checkout.sessions.create({
+        subscription_data,
+        mode: 'payment',
+        success_url: `${envConfig.CLIENT_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${envConfig.CLIENT_URL}/checkout/cancel`,
+        metadata: {userId}
+    })
 
-        async delete(req: Request, res: Response): Promise<void> {
-            try {
-                const paramsId = req.params.id
-                if (!paramsId) {
-                  throw new Error("Id not found!");
-                }
-                await paymentService.delete(paramsId as string)
-                res.status(200).json({
-                    success: true,
-                    message: "The payment data deleted successfully",
-                })
-            } catch (error: any) {
-                catchAsync(res, error)
-            }
-        }
-    
+    await PaymentModel.create({
+        userId,
+        stripeCheckoutSessionId: session.id,
+        amount: data.amount,
+        currency: 'usd',
+        status: 'pending'
+    })
+
+    return {url: session.url};
+  }
+
+  async getCheckoutSessionStatusService(sessionId: string): Promise<{
+    status: string | null,
+    payment_status: string
+  }> {
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+    return {
+        status: session.status,
+        payment_status: session.payment_status,
     }
+  }
+
+  async handleCheckoutSessionCompleted (): Promise<void> {
+    
+  }
+}
+
