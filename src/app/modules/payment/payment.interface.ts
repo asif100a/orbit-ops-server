@@ -9,7 +9,7 @@ export interface PaymentType {
   amount: number;
   currency: 'usd';
   status: "pending" | "succeeded" | "failed";
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;
 }

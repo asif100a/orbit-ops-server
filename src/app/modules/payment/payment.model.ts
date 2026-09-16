@@ -8,7 +8,7 @@
     {
       userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
       stripeCheckoutSessionId: { type: String, required: true },
-      stripePaymentIntentId: { type: String, required: true },
+      stripePaymentIntentId: { type: String, required: false },
       amount: { type: Number, required: true },
       currency: { type: String, required: true },
       status: {
