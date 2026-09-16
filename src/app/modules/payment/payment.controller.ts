@@ -10,38 +10,50 @@ import AppError from "../../errorHandlers/AppError";
 const paymentService = new PaymentService();
 
 export class PaymentController {
-  async createCheckoutSession (req: Request, res: Response) {
+  async createCheckoutSession(req: Request, res: Response) {
     try {
-        const {data} = req.body;
+      if (!req.user) {
+        throw new AppError(401, "Unauthorized access");
+      }
 
-        if(!data) {
-            throw new AppError(400, 'Payment data not found')
-        }
+      const result = await paymentService.createCheckoutSessionService(
+        req.user.id,
+        req.body,
+      );
 
-        const userId = req.user.id;
-        const result = await paymentService.createCheckoutSessionService(userId, data);
-
-        res.status(200).json({
-            success: true,
-            message: "Checkout created successfully",
-            data: result
-        })
+      res.status(200).json({
+        success: true,
+        message: "Checkout created successfully",
+        data: result,
+      });
     } catch (error) {
-        catchAsync(res, error)
+      catchAsync(res, error);
     }
   }
 
   async getCheckoutSessionStatus(req: Request, res: Response) {
     try {
-        const {session_id} = req.query;
-        const result = await paymentService.getCheckoutSessionStatusService(session_id as string);
+        if(!req.user) {
+            throw new AppError(401, "Unauthorized access")
+        }
+        
+      const sessionId = String(req.query.session_id ?? "");
 
-        res.status(200).json({
-            success: true,
-            message: "Checkout session status fetched successfully"
-        })
+      if(!sessionId) {
+        throw new AppError(400, "session_id is required");
+      }
+      const result = await paymentService.getCheckoutSessionStatusService(
+        req.user.id,
+        sessionId
+      );
+
+      res.status(200).json({
+        success: true,
+        message: "Checkout session status fetched successfully",
+        data: result
+      });
     } catch (error) {
-        catchAsync(res, error);
+      catchAsync(res, error);
     }
   }
 }
