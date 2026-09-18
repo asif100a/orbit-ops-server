@@ -5,10 +5,21 @@ export type SubscriptionPlanType = 'STARTER' | 'GROWTH' | 'SCALE'
 export interface PaymentType {
   userId: Types.ObjectId;
   stripeCheckoutSessionId: string;
-  stripePaymentIntentId: string;
-  amount: number;
-  currency: 'usd';
-  status: "pending" | "succeeded" | "failed";
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
+  stripePaymentIntentId?: string;
+  plan: SubscriptionPlanType;
+  status:
+    | "pending"
+    | "active"
+    | "trialing"
+    | "paused"
+    | "past_due"
+    | "canceled"
+    | "unpaid"
+    | "incomplete"
+    | "incomplete_expired"
+    | "failed";
   metadata?: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;

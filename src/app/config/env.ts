@@ -36,6 +36,10 @@ interface EnvConfig {
   STRIPE_SECRET_KEY: string;
   STRIPE_WEBHOOK_SECRET: string;
   CLIENT_URL: string;
+
+  STRIPE_STARTER_PRICE_ID: string;
+  STRIPE_GROWTH_PRICE_ID: string;
+  STRIPE_SCALE_PRICE_ID: string;
 }
 
 export const envConfig: EnvConfig = {
@@ -70,4 +74,8 @@ export const envConfig: EnvConfig = {
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY as string,
   STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET as string,
   CLIENT_URL: process.env.CLIENT_URL as string,
+
+  STRIPE_STARTER_PRICE_ID: process.env.STRIPE_STARTER_PRICE_ID as string,
+  STRIPE_GROWTH_PRICE_ID: process.env.STRIPE_GROWTH_PRICE_ID as string,
+  STRIPE_SCALE_PRICE_ID: process.env.STRIPE_SCALE_PRICE_ID as string,
 };

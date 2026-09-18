@@ -1,10 +1,6 @@
 import type { Request, Response } from "express";
 import { PaymentService } from "./payment.service";
 import { catchAsync } from "../../utils/index";
-import type {
-  PaymentResponseType,
-  SubscriptionPlanType,
-} from "./payment.interface";
 import AppError from "../../errorHandlers/AppError";
 
 const paymentService = new PaymentService();
