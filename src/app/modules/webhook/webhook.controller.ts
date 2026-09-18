@@ -2,7 +2,6 @@ import type { Request, Response } from "express";
 import type Stripe from "stripe";
 import stripe from "../../config/stripe";
 import { envConfig } from "../../config/env";
-import { catchAsync } from "../../utils";
 import { PaymentService } from "../payment/payment.service";
 
 const paymentService = new PaymentService();
