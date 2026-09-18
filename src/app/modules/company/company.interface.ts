@@ -3,7 +3,7 @@ import type {
   CompanyIndustry,
   CompanySize,
   SubscriptionPlans,
-} from "../../../../data";
+} from "../../../../constants";
 
 export interface CompanyType {
   name: string;

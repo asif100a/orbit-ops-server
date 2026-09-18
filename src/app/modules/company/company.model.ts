@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from "mongoose";
 import type { CompanyType } from "./company.interface";
-import { COMPANY_SIZE, SUBSCRIPTION_PLANS } from "../../../../data";
+import { COMPANY_SIZE, SUBSCRIPTION_PLANS } from "../../../../constants";
 
 export interface CompanyDocumentType extends CompanyType, Document {}
 

@@ -4,7 +4,7 @@ import {
   COMPANY_INDUSTRIES,
   COMPANY_SIZE,
   SUBSCRIPTION_PLANS,
-} from "../../../../data";
+} from "../../../../constants";
 
 // Reusable validator for Mongoose ObjectId
 const objectIdSchema = z.string().refine((val) => Types.ObjectId.isValid(val), {
