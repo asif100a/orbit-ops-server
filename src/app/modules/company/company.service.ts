@@ -64,7 +64,7 @@ export class CompanyService {
       owner: ownerId,
       admins: [ownerId],
       plan: "FREE",
-      isActive: true,
+      isActive: false,
       isVerified: false,
       onboardingCompleted: false,
     });

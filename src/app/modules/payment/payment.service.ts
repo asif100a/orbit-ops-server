@@ -35,8 +35,8 @@ export class PaymentService {
         },
       ],
       client_reference_id: userId,
-      success_url: `${envConfig.CLIENT_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${envConfig.CLIENT_URL}/checkout/cancel`,
+      success_url: `${envConfig.CLIENT_URL}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${envConfig.CLIENT_URL}/billing/failed`,
 
       metadata: {
         userId,
