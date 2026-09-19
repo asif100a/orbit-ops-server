@@ -58,7 +58,7 @@ export class PaymentService {
       userId,
       stripeCheckoutSessionId: session.id,
       plan: data.subscriptionType,
-      status: "pending",
+      status: "active",
       metadata: {
         subscriptionType: data.subscriptionType,
       },
