@@ -49,6 +49,9 @@ export class PaymentService {
           plan: data.subscriptionType,
         },
       },
+      managed_payments: {
+        enabled: false
+      }
     });
 
     await PaymentModel.create({
