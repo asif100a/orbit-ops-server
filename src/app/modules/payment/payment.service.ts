@@ -4,8 +4,10 @@ import { envConfig } from "../../config/env";
 import { PaymentModel } from "./payment.model";
 import type Stripe from "stripe";
 import AppError from "../../errorHandlers/AppError";
+import { CompanyModel } from "../company/company.model";
 
 interface CheckoutItem {
+  companyId: string;
   subscriptionType: SubscriptionPlanType;
 }
 
@@ -20,6 +22,10 @@ export class PaymentService {
     userId: string,
     data: CheckoutItem,
   ): Promise<{ url: string | null }> {
+    const company = await CompanyModel.findById(data.companyId);
+    if (!company) throw new AppError(404, "Company not found!");
+    if (!company.isVerified) throw new AppError(400, "Company is not verified");
+
     const priceId = priceIds[data.subscriptionType];
 
     if (!priceId) {
@@ -50,8 +56,8 @@ export class PaymentService {
         },
       },
       managed_payments: {
-        enabled: false
-      }
+        enabled: false,
+      },
     });
 
     await PaymentModel.create({
@@ -141,30 +147,30 @@ export class PaymentService {
         status: subscription.status,
       },
       {
-        new: true
-      }
-    )
+        new: true,
+      },
+    );
   }
 
   async handleInvoicePaid(invoice: Stripe.Invoice): Promise<void> {
     const subscriptionId = this.getInvoiceSubscriptionId(invoice);
 
-    if(!subscriptionId) return;
+    if (!subscriptionId) return;
 
     await PaymentModel.findOneAndUpdate(
       {
         stripeSubscriptionId: subscriptionId,
       },
       {
-        status: 'active'
-      }
-    )
+        status: "active",
+      },
+    );
   }
 
   async handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
     const subscriptionId = this.getInvoiceSubscriptionId(invoice);
 
-    if(!subscriptionId) return;
+    if (!subscriptionId) return;
 
     await PaymentModel.findOneAndUpdate(
       { stripeSubscriptionId: subscriptionId },
@@ -174,7 +180,9 @@ export class PaymentService {
     );
   }
 
-  private getInvoiceSubscriptionId(invoice: Stripe.Invoice): string | undefined {
+  private getInvoiceSubscriptionId(
+    invoice: Stripe.Invoice,
+  ): string | undefined {
     const subscription = invoice.parent?.subscription_details?.subscription;
 
     return typeof subscription === "string" ? subscription : subscription?.id;

@@ -112,15 +112,6 @@ export class CompanyService {
     return verifiedCompany;
   }
 
-  async subscribe(companyId: string, plan: string): Promise<CompanyType | null> {
-    const company = await CompanyModel.findById(companyId);
-    if (!company) {
-      throw new AppError(404, "Company not found");
-    }
-    // Implementation for subscription logic
-    return company;
-  }
-
   async update(
     id: string,
     data: Partial<CompanyType>,
