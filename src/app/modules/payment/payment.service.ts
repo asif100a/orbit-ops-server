@@ -70,6 +70,17 @@ export class PaymentService {
       },
     });
 
+    await CompanyModel.findOneAndUpdate(
+      { _id: data.companyId },
+      {
+        $set: {
+          isActive: true,
+          plan: data.subscriptionType,
+        },
+      },
+      { new: true },
+    );
+
     return { url: session.url };
   }
 
