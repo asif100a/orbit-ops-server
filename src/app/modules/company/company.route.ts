@@ -24,9 +24,11 @@ companyRoute.post(
   companyController.create.bind(companyController),
 );
 
+companyRoute.post("/verify", companyController.verify.bind(companyController));
+
 companyRoute.post(
-  "/verify",
-  companyController.verify.bind(companyController),
+  "/resend-company-otp",
+  companyController.companyResendOtp.bind(companyController),
 );
 
 companyRoute.put(

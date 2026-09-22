@@ -1,7 +1,6 @@
 import type { Request, Response } from "express";
 import { CompanyService } from "./company.service";
 import { catchAsync } from "../../utils/index";
-import type { CompanyResponseType } from "./company.interface";
 import AppError from "../../errorHandlers/AppError";
 
 const companyService = new CompanyService();
@@ -103,6 +102,30 @@ export class CompanyController {
       });
     } catch (error) {
       catchAsync(res, error)
+    }
+  }
+
+  async companyResendOtp(req: Request, res: Response): Promise<void>{
+    const body = req.body;
+    if(!body) {
+      throw new AppError(400, 'Company data is required')
+    }
+    const companyId = body.companyId;
+    if(!companyId) {
+      throw new AppError(400, 'Company Id is required');
+    }
+    const companyEmail = body.companyEmail;
+    if(!companyEmail) {
+      throw new AppError(400, 'Company Email is required');
+    }
+    try {
+      await companyService.resendCompanyOtp(companyId, companyEmail)
+      res.status(200).json({
+        success: true,
+        message: 'OTP resend successfully'
+      })
+    } catch (error) {
+      catchAsync(res, error);
     }
   }
 

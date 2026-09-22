@@ -69,19 +69,7 @@ export class CompanyService {
       onboardingCompleted: false,
     });
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpKey = `company-verification:${company._id}`;
-
-    try {
-      await setOtp(otpKey, otp, 600);
-      await sendOtpEmail({
-        to: company.email,
-        otp,
-      });
-    } catch (error) {
-      await deleteOtp(otpKey);
-      throw new AppError(502, "Failed to send company verification OTP");
-    }
+    await this.sendOtp(company._id.toString(), company.email)
 
     return company;
   }
@@ -110,6 +98,10 @@ export class CompanyService {
     await deleteOtp(`company-verification:${companyId}`)
 
     return verifiedCompany;
+  }
+
+  async resendCompanyOtp(companyId: string, companyEmail: string) {
+    await this.sendOtp(companyId, companyEmail);
   }
 
   async update(
@@ -145,5 +137,21 @@ export class CompanyService {
     }
 
     return company;
+  }
+
+  async sendOtp(companyId: string, companyEmail: string) {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpKey = `company-verification:${companyId}`;
+
+    try {
+      await setOtp(otpKey, otp, 600);
+      await sendOtpEmail({
+        to: companyEmail,
+        otp,
+      });
+    } catch (error) {
+      await deleteOtp(otpKey);
+      throw new AppError(502, "Failed to send company verification OTP");
+    }
   }
 }
