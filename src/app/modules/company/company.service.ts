@@ -2,7 +2,7 @@ import AppError from "../../errorHandlers/AppError";
 import { sendOtpEmail } from "../../utils/message.utils";
 import { deleteOtp, getOtp, setOtp } from "../../utils/redis.utils";
 import { Types } from "mongoose";
-import { User } from "../user/user.model";
+import { UserModel } from "../user/user.model";
 import { type CompanyType } from "./company.interface";
 import { CompanyModel } from "./company.model";
 
@@ -33,7 +33,7 @@ export class CompanyService {
     ownerId: string,
     data: Partial<CompanyType>,
   ): Promise<CompanyType> {
-    const ownerExists = await User.exists({ _id: ownerId });
+    const ownerExists = await UserModel.exists({ _id: ownerId });
     if (!ownerExists) {
       throw new AppError(404, "Owner user not found");
     }
