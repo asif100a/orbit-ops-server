@@ -5,7 +5,7 @@ import { checkAuth } from "../../middlewares/checkAuth";
 const userRoute = Router();
 const userController = new UserController();
 
-userRoute.get("/", userController.getAll.bind(userController));
+userRoute.get("/", checkAuth(), userController.getAll.bind(userController));
 
 userRoute.get(
   "/my-profile",
@@ -13,6 +13,6 @@ userRoute.get(
   userController.getMyProfile.bind(userController),
 );
 
-userRoute.get("/:id", userController.getById.bind(userController));
+userRoute.get("/:id", checkAuth(), userController.getById.bind(userController));
 
 export default userRoute;

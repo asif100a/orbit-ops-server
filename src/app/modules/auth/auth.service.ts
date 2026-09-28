@@ -11,7 +11,7 @@ import {
 } from "../../utils/redis.utils";
 import { handleToken, type TokenPayloadType } from "../../utils/token.utils";
 import type { UserType } from "../user/user.interface";
-import { User } from "../user/user.model";
+import { UserModel } from "../user/user.model";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 
@@ -28,7 +28,7 @@ export class AuthService {
   // Register logic
   async register(input: UserType): Promise<any> {
     // Check if the user duplicate
-    const existedUser = await User.findOne({ email: input.email });
+    const existedUser = await UserModel.findOne({ email: input.email });
     if (existedUser) {
       throw new AppError(409, "This email already exists");
     }
@@ -50,7 +50,7 @@ export class AuthService {
       isVerified: false,
       isDeleted: false,
     };
-    const result = await User.create(data);
+    const result = await UserModel.create(data);
 
     // Generate and send OTP
     const otp = this.generateOtp();
@@ -76,7 +76,7 @@ export class AuthService {
     password: string;
   }): Promise<AuthTokens & { user: Partial<UserType> }> {
     // 1. Find the user
-    const user = await User.findOne({ email: input.email }).select("+password");
+    const user = await UserModel.findOne({ email: input.email }).select("+password");
     if (!user || !user.password) {
       throw new AppError(401, "Invalid email or password");
     }
@@ -160,7 +160,7 @@ export class AuthService {
       throw new AppError(400, "Invalid or expired OTP");
     }
 
-    const user = await User.findOne({ email });
+    const user = await UserModel.findOne({ email });
 
     if (!user) {
       throw new AppError(404, "User not found!");
@@ -184,7 +184,7 @@ export class AuthService {
     }
 
     // Mark user as verified
-    const updateUser = await User.findOneAndUpdate(
+    const updateUser = await UserModel.findOneAndUpdate(
       { email },
       { isVerified: true, isActive: true },
       { new: true },
@@ -226,7 +226,7 @@ export class AuthService {
     email: string,
     otpType: "register" | "forgot-password" = "register",
   ): Promise<{ verifyToken: string }> {
-    const user = await User.findOne({ email });
+    const user = await UserModel.findOne({ email });
 
     if (!user) {
       throw new AppError(404, "User not found");
@@ -248,7 +248,7 @@ export class AuthService {
   }
 
   async forgotPassword(email: string): Promise<{ verifyToken: string }> {
-    const user = await User.findOne({ email });
+    const user = await UserModel.findOne({ email });
 
     if (!user) {
       throw new AppError(404, "User not found");
@@ -293,7 +293,7 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(newPassword, bcryptSalt);
 
-    const user = await User.findOneAndUpdate(
+    const user = await UserModel.findOneAndUpdate(
       { email: decoded.email },
       { password: hashedPassword },
       { new: true },
@@ -307,7 +307,7 @@ export class AuthService {
   }
 
   async checkAuthentication(email: string) {
-    const user = await User.findOne({ email });
+    const user = await UserModel.findOne({ email });
     if (!user) {
       throw new AppError(401, "User not found");
     }
@@ -334,7 +334,7 @@ export class AuthService {
     otp?: string,
     otpType: string = "register",
   ): Promise<void> {
-    const user = await User.findOne({ email });
+    const user = await UserModel.findOne({ email });
     if (!user) {
       throw new AppError(404, "User not found!");
     }
