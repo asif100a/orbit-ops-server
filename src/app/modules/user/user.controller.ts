@@ -15,11 +15,11 @@ export class UserController {
     }
 
     async getMyProfile(req: Request, res: Response) {
-        const body = req.body;
-        if(!body) {
-            throw new AppError(400, "Body data missing");
+        const user = req.user;
+        if(!user) {
+            throw new AppError(400, "User data missing");
         }
-        const userId = body.id
+        const userId = user.id
         if(!userId) {
             throw new AppError(400, "User Id is missing")
         }

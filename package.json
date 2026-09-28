@@ -4,9 +4,9 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "tsc",
-    "dev": "bun --watch src/server.ts",
-    "start": "node dist/server.js",
+    "build": "node init && tsc",
+    "dev": "node init && bun --watch src/server.ts",
+    "start": "node init && node dist/server.js",
     "gen:module": "node script/generate-module.js"
   },
   "devDependencies": {

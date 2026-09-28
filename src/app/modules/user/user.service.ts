@@ -10,6 +10,6 @@ export class UserService {
     }
 
     async myProfile(id: string) {
-        return UserModel.findById(id).populate('-password')
+        return UserModel.findById(id).select('-password')
     }
 }

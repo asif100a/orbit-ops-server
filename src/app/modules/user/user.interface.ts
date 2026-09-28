@@ -6,7 +6,7 @@ export interface UserType {
   email: string;
   password: string;
   confirmPassword: string;
-  role: UserRole,
+  role: UserRole | [UserRole],
   companyId?: Types.ObjectId | null;
   departmentId?: Types.ObjectId | null;
   teamId?: Types.ObjectId | null;

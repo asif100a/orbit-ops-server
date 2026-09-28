@@ -98,7 +98,7 @@ export class AuthService {
     const payload: TokenPayloadType = {
       id: user._id.toString(),
       email: user.email,
-      role: user.role,
+      role: typeof user.role === 'string' ? user.role : user.role[0],
     };
 
     const accessToken = handleToken.generateAccessToken(payload);
@@ -200,7 +200,7 @@ export class AuthService {
     const payload = {
       id: updateUser._id.toString(),
       email: updateUser.email,
-      role: updateUser.role,
+      role: typeof updateUser.role === 'string' ? updateUser.role : updateUser.role[0],
     };
 
     const accessToken = handleToken.generateAccessToken(payload);
